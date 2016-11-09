@@ -1,15 +1,17 @@
+path = require("path").posix
 coffee = require("coffeescript")
 stylus = require("stylus")
 markdown = require("markodwn-it")
 
 class ResMaker
-    constructor: (srcExt, dstExt, compile) ->
+    constructor: (srcExt, dstExt, encoding, compile) ->
         @srcExt = srcExt
         @dstExt = dstExt
+        @encoding = encoding
         @compile = compile
         return
 
-class ResMakersMgr
+class ResMakesMgr
     constructor: () ->
         @_makersMap = Object.create(null)
         @_makersLen = 0
@@ -18,55 +20,44 @@ class ResMakersMgr
     insertMaker: (srcExt, dstExt, compile) ->
         if @_makersMap[srcExt]
             throw new Error()
-        maker = new ResMaker(srcExt, dstExt, compile)
-        @_makersMap[srcExt] = maker
+        resMaker = new ResMaker(srcExt, dstExt, compile)
+        @_makersMap[srcExt] = resMaker
         @_makersLen = @_makersLen + 1
         return
 
-    removeMaker: (dstExt) ->
-        if @_makersMap[dstExt]
-            delete @_makersMap[dstExt]
+    removeMaker: (srcExt) ->
+        if @_makersMap[srcExt]
+            delete @_makersMap[srcExt]
             @_makersLen = @_makersLen - 1
         return
 
-    findMakerBySrc: (srcExt) ->
+    findMaker: (srcExt) ->
         return @_makersMap[srcExt] or null
 
-    findMakersByDst: (dstExt) ->
-        makeraArray = []
-        for _, maker of @_makersMap
-            if dstExt == maker.dstExt
-                makeraArray.push(maker)
-        return makeraArray
-
     convertExtName: (srcExt) ->
-        maker = @_makersMap[srcExt]
-        if not maker
+        resMaker = @_makersMap[srcExt]
+        if not resMaker
             return srcExt
-        return maker.dstExt
+        return resMaker.dstExt
 
     convertFileName: (srcName) ->
-        dotPos = srcName.lastIndexOf(".")
-        if -1 == dotPos
+        extName = path.extname(srcName)
+        resMaker = makersMap[extName]
+        if not resMaker
             return srcName
-        extName = srcName[dotPos+1...]
-        baseName = srcName[...dotPos]
-        maker = makersMap[extName]
-        if not maker
-            return srcName
-        else
-            return "#{baseName}#{maker.dstExt}"
+        baseName = path.basename(srcName)
+        return "#{baseName}#{resMaker.dstExt}"
 
-exports.resMakersMgr = resMakersMgr = new resMakersMgr()
+exports.resMakersMgr = resMakersMgr = new ResMakesMgr()
 
-resMakersMgr.insertMaker "coffee", "js", () ->
+resMakersMgr.insertMaker ".coffee", ".js", "utf8", () ->
     return
 
-resMakersMgr.insertMaker "styl", "css", () ->
+resMakersMgr.insertMaker ".styl", ".css", "utf8", () ->
     return
 
-resMakersMgr.insertMaker "md", "txt", () ->
+resMakersMgr.insertMaker ".md", ".txt", "utf8", () ->
     return
 
-resMakersMgr.insertMaker "cson", "json", () ->
+resMakersMgr.insertMaker ".cson", ".json", "utf8", () ->
     return
