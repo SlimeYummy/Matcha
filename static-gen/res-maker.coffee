@@ -1,7 +1,7 @@
 path = require("path").posix
 coffee = require("coffeescript")
 stylus = require("stylus")
-markdown = require("markodwn-it")
+markdown = require("markdown-it")
 
 class ResMaker
     constructor: (srcExt, dstExt, encoding, compile) ->
@@ -48,7 +48,7 @@ class ResMakesMgr
         baseName = path.basename(srcName)
         return "#{baseName}#{resMaker.dstExt}"
 
-exports.resMakersMgr = resMakersMgr = new ResMakesMgr()
+resMakersMgr = new ResMakesMgr()
 
 resMakersMgr.insertMaker ".coffee", ".js", "utf8", () ->
     return
@@ -61,3 +61,5 @@ resMakersMgr.insertMaker ".md", ".txt", "utf8", () ->
 
 resMakersMgr.insertMaker ".cson", ".json", "utf8", () ->
     return
+
+exports.resMakersMgr = resMakersMgr
