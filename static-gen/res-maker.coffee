@@ -18,18 +18,12 @@ class ResMaker
         return
 
     toSrcName: (dstName) ->
-        dotPos = dstName.lastIndexOf(".")
-        if -1 == dotPos
-            return null
-        baseName = dstName[...dotPos]
-        return baseName + @_srcExt
+        baseName = path.basename(dstName)
+        return "#{baseName}#{@_srcExt}"
 
     toDstName: (srcName) ->
-        dotPos = srcName.lastIndexOf(".")
-        if -1 == dotPos
-            return null
-        baseName = srcName[...dotPos]
-        return baseName + @_dstExt
+        baseName = path.basename(srcName)
+        return "#{baseName}#{@_dstExt}"
 
     compile: (srcBuffer) ->
         compile = @_compile
@@ -37,7 +31,7 @@ class ResMaker
             return srcBuffer
         return compile(srcBuffer)
 
-ResMaker.new = (srcExt, dstExt, encoding, compile) ->
+ResMaker.create = (srcExt, dstExt, encoding, compile) ->
     ins = new ResMaker()
     ins.srcExt = srcExt
     ins.dstExt = dstExt
@@ -72,7 +66,12 @@ class ResMakersMap
                 resultLen = resultLen + 1
         return resultArray
 
-ResMakersMap.new = () ->
+    forEach: (func) ->
+        for _, maker of @_makersMap
+            func(maker)
+        return
+
+ResMakersMap.create = () ->
     ins = new ResMakersMap()
     for idx in [0...arguments.length] by 1
         maker = arguments[idx]
@@ -109,19 +108,19 @@ ResMakersMap.merge = (ins1, ins2) ->
     return ins
 
 
-coffeeMaker = ResMaker.new ".coffee", ".js", "utf8", (srcBuffer) ->
+coffeeMaker = ResMaker.create ".coffee", ".js", "utf8", (srcBuffer) ->
     return
 
-stylusMaker = ResMaker.new ".styl", ".css", "utf8", (srcBuffer) ->
+stylusMaker = ResMaker.create ".styl", ".css", "utf8", (srcBuffer) ->
     return
 
-markdownMaker = ResMaker.new ".md", ".txt", "utf8", (srcBuffer) ->
+markdownMaker = ResMaker.create ".md", ".txt", "utf8", (srcBuffer) ->
     return
 
-csonMaker = ResMaker.new ".cson", ".json", "utf8", (srcBuffer) ->
+csonMaker = ResMaker.create ".cson", ".json", "utf8", (srcBuffer) ->
     return
 
-resMakersMap = ResMakersMap.new(
+innerMakers = ResMakersMap.create(
     coffeeMaker,
     stylusMaker,
     markdownMaker,
@@ -131,4 +130,4 @@ resMakersMap = ResMakersMap.new(
 
 exports.ResMaker = ResMaker
 exports.ResMakersMap = ResMakersMap
-exports.resMakersMap = resMakersMap
+exports.innerMakers = innerMakers

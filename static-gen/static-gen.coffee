@@ -2,25 +2,35 @@
 # static-gen.coffee
 # # # # # # # # # # # # # # # # # # # #
 
-VirtualFs = require("virtual-fs")
-resMakersMgr = require("res-maker")
+FileSystem = require("file-system")
+{ResMakersMap, innerMakers} = require("res-maker")
 
 
 syncSrcToTmp = (root) ->
-    srcDetail = listDirDetail("#{root}/src/")
-    tmpDetail = listDirDetail("#{root}/tmp/")
-    # build new files in source
-    for srcName, srcTime of srcDetail.filesMap
-        srcExt = path.extname(srcName)
-        resMaker = resMakersMgr.findMaker(srcExt)
-        if not resMaker
-            continue
-        baseName = srcName[...-srcExt.length]
-        tmpName = "#{baseName}#{resMaker.dstExt}"
-        tmpTime = tmpDetail.filesMap[tmpName]
-        if not tmpTime or tmpTime < srcTime
-            srcBuffer = fs.readFileSync("#{root}/#{tmpName}")
-            resMaker.compile(srcName)
-    # delete old files in cache
-    for
+    srcFileSystem = FileSystem.create("#{root}/src/")
+    tmpFileSystem = FileSystem.create("#{root}/tmp/")
+    aliveTmpsMap = Object.create(null)
+    # update resource
+    srcFileSystem.forEachFiles (srcInfo) ->
+        # need compile ?
+        maker = innerMakers.findBySrcExt(srcInfo.extName)
+        if not maker
+            return
+        # need update ?
+        tmpName = "#{srcInfo.name}#{maker.extName}"
+        aliveTmpsMap[tmpName] = true
+        tmpInfo = tmpFileSystem.getFileInfo(tmpName)
+        if tmpInfo and srcInfo.time < tmpInfo.time
+            return
+        # compile resource
+        srcBuffer = srcFileSystem.readFile(srcInfo.name)
+        tmpBuffer = maker.compile(srcBuffer)
+        tmpFileSystem.writeFile(tmpInfo, tmpBuffer)
+    # delete resource
+    tmpFileSystem.forEachFiles (tmpInfo) ->
+        if not aliveTmpsMap[tmpInfo.name]
+            tmpFileSystem.removeFile(tmpInfo.name)
+    tmpFileSystem.foreachDirs (tmpInfo) ->
+        if not srcFileSystem.getFileInfo(tmpInfo.name)
+            tmpFileSystem.removeDir(tmpInfo.name)
     return
