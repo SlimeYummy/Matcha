@@ -1,5 +1,10 @@
+# # # # # # # # # # # # # # # # # # # #
+# static-gen.coffee
+# # # # # # # # # # # # # # # # # # # #
+
 VirtualFs = require("virtual-fs")
 resMakersMgr = require("res-maker")
+
 
 syncSrcToTmp = (root) ->
     srcDetail = listDirDetail("#{root}/src/")

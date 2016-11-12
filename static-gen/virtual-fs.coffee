@@ -1,16 +1,18 @@
+# # # # # # # # # # # # # # # # # # # #
+# error.coffee
+# # # # # # # # # # # # # # # # # # # #
+
 fs = require("fs")
-path = require("fs")
+path = require("path").posix
+error = require("./error")
+
 
 class VirtualFs
-    constructor: (root) ->
-        @_root = path.normalize("#{root}")
-        @_filesMap = Object.create(null)
-        @_dirsMap = Object.create(null)
-        @syncSystemFs()
+    constructor: () ->
+        @root = ""
+        @_filesMap = null
+        @_dirsMap = null
         return
-
-    getRoot: () ->
-        return @_root
 
     existFile: (name) ->
         return !!@_filesMap[name]
@@ -20,8 +22,8 @@ class VirtualFs
 
     readFile: (name, encoding) ->
         if not @_filesMap[name]
-            return null
-        buffer = fs.readFileSync("#{@_root}/#{name}", encoding)
+            throw new Error(error.FILE_NOT_FOUND)
+        buffer = fs.readFileSync("#{@root}/#{name}", encoding)
         return buffer
 
     writeFile: (name, buffer) ->
@@ -38,25 +40,25 @@ class VirtualFs
                 if "/" == name[idx2]
                     subName = name[...idx2]
                     @_dirsMap[subName] = 1
-        fs.writeFileSync("#{@_root}/#{name}", buffer)
+        fs.writeFileSync("#{@root}/#{name}", buffer)
         @_dirsMap[fullName] = new Date()
         return
 
     removeFile: (name) ->
         if not @_filesMap[name]
             return
-        fs.unlinkSync("#{@_root}/#{name}")
+        fs.unlinkSync("#{@root}/#{name}")
         for idx in [name.length-1...0] by -1
             if "/" == name[idx]
                 subName = name[...idx]
                 if 1 != @_dirsMap[subName]
                     break
-                fs.rmdirSync("#{@_root}/#{subName}")
+                fs.rmdirSync("#{@root}/#{subName}")
                 delete @_dirsMap[subName]
         return
 
     syncSystemFs: () ->
-        root = @_root
+        root = @root
         filesMap = @_filesMap
         dirsMap = @_dirsMap
         syncHelper = (parent) ->
@@ -73,5 +75,14 @@ class VirtualFs
             return childrenArray.length
         dirsMap[""] = syncHelper("")
         return
+
+VirtualFs.new = (root) ->
+    ins = new VirtualFs()
+    ins.root = path.normalize(root)
+    ins._filesMap = Object.create(null)
+    ins._dirsMap = Object.create(null)
+    ins.syncSystemFs()
+    return ins
+
 
 exports.VirtualFs = VirtualFs

@@ -1,65 +1,134 @@
+# # # # # # # # # # # # # # # # # # # #
+# error.coffee
+# # # # # # # # # # # # # # # # # # # #
+
 path = require("path").posix
 coffee = require("coffeescript")
 stylus = require("stylus")
 markdown = require("markdown-it")
+error = require("./error")
+
 
 class ResMaker
-    constructor: (srcExt, dstExt, encoding, compile) ->
-        @srcExt = srcExt
-        @dstExt = dstExt
-        @encoding = encoding
-        @compile = compile
-        return
-
-class ResMakesMgr
     constructor: () ->
-        @_makersMap = Object.create(null)
-        @_makersLen = 0
+        @srcExt = ""
+        @dstExt = ""
+        @encoding = ""
+        @_compile = null
         return
 
-    insertMaker: (srcExt, dstExt, compile) ->
-        if @_makersMap[srcExt]
-            throw new Error()
-        resMaker = new ResMaker(srcExt, dstExt, compile)
-        @_makersMap[srcExt] = resMaker
-        @_makersLen = @_makersLen + 1
+    toSrcName: (dstName) ->
+        dotPos = dstName.lastIndexOf(".")
+        if -1 == dotPos
+            return null
+        baseName = dstName[...dotPos]
+        return baseName + @_srcExt
+
+    toDstName: (srcName) ->
+        dotPos = srcName.lastIndexOf(".")
+        if -1 == dotPos
+            return null
+        baseName = srcName[...dotPos]
+        return baseName + @_dstExt
+
+    compile: (srcBuffer) ->
+        compile = @_compile
+        if not compile
+            return srcBuffer
+        return compile(srcBuffer)
+
+ResMaker.new = (srcExt, dstExt, encoding, compile) ->
+    ins = new ResMaker()
+    ins.srcExt = srcExt
+    ins.dstExt = dstExt
+    ins.encoding = encoding
+    ins._compile = compile
+    return ins
+
+ResMaker.clone = (oldIns) ->
+    ins = new ResMaker()
+    ins.srcExt = oldIns.srcExt
+    ins.dstExt = oldIns.dstExt
+    ins.encoding = oldIns.encoding
+    ins._compile = oldIns._compile
+    return ins
+
+
+class ResMakersMap
+    constructor: () ->
+        @_map = Object.create(null)
+        @length = 0
         return
 
-    removeMaker: (srcExt) ->
-        if @_makersMap[srcExt]
-            delete @_makersMap[srcExt]
-            @_makersLen = @_makersLen - 1
-        return
+    findBySrcExt: (srcExt) ->
+        return @_map[srcExt] or null
 
-    findMaker: (srcExt) ->
-        return @_makersMap[srcExt] or null
+    findByDstExt: (dstExt) ->
+        resultArray = []
+        resultLen = 0
+        for _, maker of @_map
+            if dstExt == maker._dstExt
+                resultArray[resultLen] = dstExt
+                resultLen = resultLen + 1
+        return resultArray
 
-    convertExtName: (srcExt) ->
-        resMaker = @_makersMap[srcExt]
-        if not resMaker
-            return srcExt
-        return resMaker.dstExt
+ResMakersMap.new = () ->
+    ins = new ResMakersMap()
+    for idx in [0...arguments.length] by 1
+        maker = arguments[idx]
+        if ins._map[maker._srcExt]
+            throw new Error(error.SRC_EXT_CONFILICT)
+        ins._map[maker._srcExt] = maker
+        ins.length = ins.length + 1
+    return ins
 
-    convertFileName: (srcName) ->
-        extName = path.extname(srcName)
-        resMaker = makersMap[extName]
-        if not resMaker
-            return srcName
-        baseName = path.basename(srcName)
-        return "#{baseName}#{resMaker.dstExt}"
+ResMakersMap.clone = (oldIns) ->
+    ins = new ResMakersMap()
+    for _, maker of oldIns._map
+        ins._map[maker._srcExt] = maker
+    ins.length = oldInstance.length
+    return ins
 
-resMakersMgr = new ResMakesMgr()
+ResMakersMap.append = (oldIns) ->
+    ins = ResMakersMap.clone(oldIns)
+    for idx in [1...arguments.length] by 1
+        maker = arguments[idx]
+        if ins._map[maker._srcExt]
+            throw new Error(error.SRC_EXT_CONFILICT)
+        ins._map[maker._srcExt] = maker
+        ins.length = instance.length + 1
+    return ins
 
-resMakersMgr.insertMaker ".coffee", ".js", "utf8", () ->
+ResMakersMap.merge = (ins1, ins2) ->
+    ins = ResMakersMap.clone(ins1)
+    for _, maker of ins2._map
+        if ins._map[maker._srcExt]
+            throw new Error(error.SRC_EXT_CONFILICT)
+        ins._map[maker._srcExt] = maker
+        ins.length = instance.length + 1
+    return ins
+
+
+coffeeMaker = ResMaker.new ".coffee", ".js", "utf8", (srcBuffer) ->
     return
 
-resMakersMgr.insertMaker ".styl", ".css", "utf8", () ->
+stylusMaker = ResMaker.new ".styl", ".css", "utf8", (srcBuffer) ->
     return
 
-resMakersMgr.insertMaker ".md", ".txt", "utf8", () ->
+markdownMaker = ResMaker.new ".md", ".txt", "utf8", (srcBuffer) ->
     return
 
-resMakersMgr.insertMaker ".cson", ".json", "utf8", () ->
+csonMaker = ResMaker.new ".cson", ".json", "utf8", (srcBuffer) ->
     return
 
-exports.resMakersMgr = resMakersMgr
+resMakersMap = ResMakersMap.new(
+    coffeeMaker,
+    stylusMaker,
+    markdownMaker,
+    csonMaker
+)
+
+
+exports.ResMaker = ResMaker
+exports.ResMakersMap = ResMakersMap
+exports.resMakersMap = resMakersMap
