@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # #
-# error.coffee
+# res-maker.coffee
 # # # # # # # # # # # # # # # # # # # #
 
 path = require("path").posix
@@ -47,7 +47,6 @@ ResMaker.clone = (oldIns) ->
     ins._compile = oldIns._compile
     return ins
 
-
 class ResMakersMap
     constructor: () ->
         @_map = Object.create(null)
@@ -71,10 +70,10 @@ class ResMakersMap
             func(maker)
         return
 
-ResMakersMap.create = () ->
+ResMakersMap.create = (makersArray) ->
     ins = new ResMakersMap()
-    for idx in [0...arguments.length] by 1
-        maker = arguments[idx]
+    for idx in [0...makersArray.length] by 1
+        maker = makersArray[idx]
         if ins._map[maker._srcExt]
             throw new Error(error.SRC_EXT_CONFILICT)
         ins._map[maker._srcExt] = maker
@@ -88,10 +87,10 @@ ResMakersMap.clone = (oldIns) ->
     ins.length = oldInstance.length
     return ins
 
-ResMakersMap.append = (oldIns) ->
+ResMakersMap.append = (oldIns, makersArray) ->
     ins = ResMakersMap.clone(oldIns)
-    for idx in [1...arguments.length] by 1
-        maker = arguments[idx]
+    for idx in [1...makersArray.length] by 1
+        maker = makersArray[idx]
         if ins._map[maker._srcExt]
             throw new Error(error.SRC_EXT_CONFILICT)
         ins._map[maker._srcExt] = maker
@@ -120,12 +119,12 @@ markdownMaker = ResMaker.create ".md", ".txt", "utf8", (srcBuffer) ->
 csonMaker = ResMaker.create ".cson", ".json", "utf8", (srcBuffer) ->
     return
 
-innerMakers = ResMakersMap.create(
+innerMakers = ResMakersMap.create([
     coffeeMaker,
     stylusMaker,
     markdownMaker,
     csonMaker
-)
+])
 
 
 exports.ResMaker = ResMaker

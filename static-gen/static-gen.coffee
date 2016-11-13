@@ -2,35 +2,52 @@
 # static-gen.coffee
 # # # # # # # # # # # # # # # # # # # #
 
-FileSystem = require("file-system")
-{ResMakersMap, innerMakers} = require("res-maker")
+art = require("art-template")
+{FileSystem} = require("./file-system")
+{ResMakersMap, innerMakers} = require("./res-maker")
 
 
 syncSrcToTmp = (root) ->
-    srcFileSystem = FileSystem.create("#{root}/src/")
-    tmpFileSystem = FileSystem.create("#{root}/tmp/")
-    aliveTmpsMap = Object.create(null)
+    srcFileSystem = FileSystem.createFromDisk("#{root}/src/")
+    tmpFileSystem = FileSystem.createFromDisk("#{root}/tmp/")
     # update resource
-    srcFileSystem.forEachFiles (srcInfo) ->
+    infosArray = srcFileSystem.mapFileInfos (srcInfo) ->
         # need compile ?
         maker = innerMakers.findBySrcExt(srcInfo.extName)
         if not maker
-            return
+            return srcInfo
         # need update ?
-        tmpName = "#{srcInfo.name}#{maker.extName}"
-        aliveTmpsMap[tmpName] = true
-        tmpInfo = tmpFileSystem.getFileInfo(tmpName)
-        if tmpInfo and srcInfo.time < tmpInfo.time
-            return
+        tmpName = "#{srcInfo.baseName}#{maker.extName}"
+        tmpInfo = tmpFileSystem.findFileInfo(tmpName)
+        if tmpInfo and srcInfo.mtime < tmpInfo.mtime
+            return tmpInfo
         # compile resource
         srcBuffer = srcFileSystem.readFile(srcInfo.name)
         tmpBuffer = maker.compile(srcBuffer)
         tmpFileSystem.writeFile(tmpInfo, tmpBuffer)
+        return tmpInfo
     # delete resource
-    tmpFileSystem.forEachFiles (tmpInfo) ->
-        if not aliveTmpsMap[tmpInfo.name]
+    virFileSystem = FileSystem.createFromArray(infosArray)
+    tmpFileSystem.forEachFileInfos (tmpInfo) ->
+        virInfo = virFileSystem.findFileInfo(tmpInfo.name)
+        if virInfo != tmpInfo
             tmpFileSystem.removeFile(tmpInfo.name)
-    tmpFileSystem.foreachDirs (tmpInfo) ->
-        if not srcFileSystem.getFileInfo(tmpInfo.name)
-            tmpFileSystem.removeDir(tmpInfo.name)
+    return virFileSystem
+
+genStaticPage = (virFileSystem) ->
+    rlsFileSystem = FileSystem.createFromDisk("#{root}/rls/")
+    virFileSystem.forEachFiles (virInfo) ->
+        if "_.json" == virInfo.shortName
+            # ...
+        else if
+            if "_" != virInfo.shortName[0]
+                rlsInfo = rlsFileSystem.findFileInfo(virInfo.name)
+                if not rlsInfo or rlsInfo.mtime <= virInfo.mtime
+                    buffer = virFileSystem.readFile(virInfo.name)
+                    rlsFileSystem.writeFile(virInfo.name, buffer)
+    rlsFileSystem.forEachFiles (rlsInfo) ->
+        if "_.json" != rlsInfo.name
+            virInfo = virFileSystem.findFileInfo(rlsInfo.name)
+            if not virInfo
+                rlsFileSystem.removeFile(rlsInfo.name)
     return
