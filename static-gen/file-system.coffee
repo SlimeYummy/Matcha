@@ -3,30 +3,27 @@
 # # # # # # # # # # # # # # # # # # # #
 
 fs = require("fs")
-pp = require("name").posix
-error = require("./error")
-
+path = require("name").posix
 
 FileInfo = (name, diskName, mtime) ->
     @name = name
     @diskName = diskName
-    @shortName = shortName
-    @baseName = pp.basename(name)
-    @extName = pp.extname(name)
+    @baseName = path.basename(name)
+    @extName = path.extname(name)
     @mtime = mtime or new Data()
     return
 
-DirInfo = (name, diskName, dhildren) ->
+DirInfo = (name, diskName, children) ->
     @name = name
     @diskName = diskName
-    @dhildren = dhildren or 0
+    @children = children or 0
     return
 
-class FileSystem
+class MappingFileSystem
     constructor: () ->
-        @rootPath = null
-        @_syncFlag = false
+        @rootPath = ""
         @_filesMap = null
+        @_filesLen = 0
         @_dirsMap = null
         return
 
@@ -39,7 +36,7 @@ class FileSystem
         return
 
     mapFileInfos: (func) ->
-        resultArray = new Array()
+        resultArray = new Array(@_filesLen)
         resultLen = 0
         for _, fileInfo of @_filesMap
             resultArray[resultLen] = func(fileInfo)
@@ -51,100 +48,120 @@ class FileSystem
         if fileInfo
             return fs.readFileSync(fileInfo.diskName, encoding)
         else
-            throw new Error("#{error.FILE_NOT_FOUND}: #{name}")
+            throw new Error("File not found: #{name}")
 
     writeFile: (name, buffer) ->
-        if not @_syncFlag
-            fileInfo = @_filesMap[name]
-            if fileInfo
-                return fs.writeFileSync(fileInfo.diskName, buffer)
-            else
-                throw new Error(error.VIRTUAL_FILE_SYSTEM)
+        fileInfo = @_filesMap[name]
+        if fileInfo
+            return fs.writeFileSync(fileInfo.diskName, buffer)
         else
-            fileInfo = @_filesMap[name]
-            if fileInfo
-                return fs.writeFileSync(fileInfo.diskName, buffer)
-            else
-                prevDirInfo = @_dirsMap[""]
-                for idx in [0...name.length] by 1
-                    if "/" == name[idx]
-                        dirPath = name[..idx]
-                        dirInfo = @_dirsMap[dirPath]
-                        if not dirInfo
-                            prevDirInfo.children += 1
-                            dirInfo = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
-                            @_dirsMap[dirPath] = dirInfo
-                        prevDirInfo = dirInfo
-                prevDirInfo.children += 1
-                fileInfo = new FileInfo(name, "#{@rootPath}/#{name}")
-                @_filesMap[fileInfo.name] = fileInfo
-                return fs.writeFileSync(fileInfo.name, buffer)
+            prevDirInfo = @_dirsMap[""]
+            for idx in [0...name.length] by 1
+                if "/" == name[idx]
+                    dirPath = name[...idx]
+                    dirInfo = @_dirsMap[dirPath]
+                    if not dirInfo
+                        prevDirInfo.children = prevDirInfo.children + 1
+                        @_dirsMap[dirPath] = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
+                    prevDirInfo = dirInfo
+            prevDirInfo.children = prevDirInfo.children + 1
+            @_filesMap[fileInfo.name] = new FileInfo(name, "#{@rootPath}/#{name}")
+            @_filesLen = @_filesLen + 1
+            return fs.writeFileSync(fileInfo.diskName, buffer)
 
     removeFile: (name) ->
-        if not @_syncFlag
-            throw new Error(error.VIRTUAL_FILE_SYSTEM)
+        fileInfo = @_filesMap[name]
+        if not fileInfo
+            throw new Error("File not found: #{name}")
         else
-            fileInfo = @_filesMap[name]
-            if fileInfo
-                throw new Error("#{error.FILE_NOT_FOUND}: #{name}")
-            else
-                fs.unlinkSync("#{@rootPath}/#{name}")
-                for idx in [name.length-1...0] by -1
-                    if "/" == name[idx]
-                        dirPath = name[..idx]
-                        dirInfo = @_dirsMap[dirPath]
-                        if dirInfo.children > 1
-                            break
-                        else
-                            fs.rmdirSync("#{@rootPath}/#{subName}")
-                            delete @_dirsMap[subName]
+            fs.unlinkSync(fileInfo.diskName)
+            delete @_filesMap[name]
+            @_filesLen = @_filesLen - 1
+            for idx in [name.length-1...0] by -1
+                if "/" == name[idx]
+                    dirPath = name[...idx]
+                    dirInfo = @_dirsMap[dirPath]
+                    if dirInfo.children > 1
+                        break
+                    else
+                        fs.rmdirSync(info.diskName)
+                        delete @_dirsMap[dirPath]
         return
 
     syncToDisk: () ->
-        if not @_syncFlag
-            throw new Error(error.VIRTUAL_FILE_SYSTEM)
-        else
-            rootPath = @rootPath
-            filesMap = @_filesMap
-            dirsMap = @_dirsMap
-            syncHelper = (parent) ->
-                childrenArray = fs.readdirSync(parent)
-                for child in childrenArray
-                    name = "#{parent}/#{child}"
-                    diskName = "#{rootPath}/#{parent}/#{child}"
-                    stat = fs.statSync(diskName)
-                    if stat.isFile()
-                        fileInfo = new FileInfo(name, diskName, stat.mtime)
-                        filesMap[name] = fileInfo
-                    else if stat.isDirectory()
-                        children = syncHelper(name)
-                        dirInfo = new DirInfo(name, diskName, children)
-                        dirsMap[name] = dirInfo
-                return childrenArray.length
-            dirsMap[""] = syncHelper("")
+        @_filesMap = Object.create(null)
+        @_filesLen = 0
+        @_dirsMap = Object.create(null)
+        thiz = this
+        _syncToDisk_ = (parent, diskParent) ->
+            filesArray = fs.readdirSync(diskParent)
+            thiz._dirsMap[parent] = new DirInfo(parent, diskParent, filesArray.length)
+            for file in filesArray
+                child = "#{parent}/#{file}"
+                diskChild = "#{thiz.rootPath}/#{parent}/#{file}"
+                stat = fs.statSync(diskChild)
+                if stat.isFile()
+                    thiz._filesMap[child] = new FileInfo(child, diskChild, stat.mtime)
+                    thiz._filesLen = thiz._filesLen + 1
+                else if stat.isDirectory()
+                    return _syncToDisk_(child, diskChild)
+            return
+        _syncToDisk_("", @rootPath)
         return
 
-FileSystem.createFromDisk = (rootPath) ->
-    ins = new FileSystem()
-    ins.rootPath = name.normalize("#{rootPath}/")
-    ins._syncFlag = true
-    ins._filesMap = Object.create(null)
-    ins._dirsMap = Object.create(null)
+MappingFileSystem.create = (rootPath) ->
+    ins = new MappingFileSystem()
+    rootPath = name.normalize("#{rootPath}/")
+    ins.rootPath = rootPath[...-1]
     ins.syncToDisk()
     return ins
 
-FileSystem.createFromArray = (infosArray) ->
-    ins = new FileSystem()
-    ins.rootPath = ""
-    ins._syncFlag = false
-    ins._filesMap = Object.create(null)
-    ins._dirsMap = Object.create(null)
-    for info in infosArray
-        if ins._filesMap[info.name]
-            throw new Error(error.FILE_NAME_CONFILICT)
+class VirtualFileSystem
+    constructor: () ->
+        @_filesMap = null
+        @_filesLen = 0
+        return
+
+    findFileInfo: (name) ->
+        return @_filesMap[name]
+
+    forEachFileInfos: (func) ->
+        for _, fileInfo of @_filesMap
+            func(fileInfo)
+        return
+
+    mapFileInfos: (func) ->
+        resultArray = new Array(@_filesLen)
+        resultLen = 0
+        for _, fileInfo of @_filesMap
+            resultArray[resultLen] = func(fileInfo)
+            resultLen = resultLen + 1
+        return resultArray
+
+    readFile: (name, encoding) ->
+        fileInfo = @_filesMap[name]
+        if fileInfo
+            return fs.readFileSync(fileInfo.diskName, encoding)
         else
+            throw new Error("File not found: #{name}")
+
+    writeFile: (name, buffer) ->
+        fileInfo = @_filesMap[name]
+        if fileInfo
+            return fs.writeFileSync(fileInfo.diskName, buffer)
+        else
+            throw new Error("File not found: #{name}")
+
+VirtualFileSystem.create = (infosArray) ->
+    ins = new MappingFileSystem()
+    ins._filesMap = Object.create(null)
+    ins._filesLen = infosArray.length
+    for info in infosArray
+        if not ins._filesMap[info.name]
             ins._filesMap[info.name] = info
+        else
+            throw new Error("File name confilict: #{info.name}")
     return ins
 
-
-exports.FileSystem = FileSystem
+exports.MappingFileSystem = MappingFileSystem
+exports.VirtualFileSystem = VirtualFileSystem

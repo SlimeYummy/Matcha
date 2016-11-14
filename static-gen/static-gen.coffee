@@ -3,13 +3,12 @@
 # # # # # # # # # # # # # # # # # # # #
 
 art = require("art-template")
-{FileSystem} = require("./file-system")
+{MappingFileSystem, VirtualFileSystem} = require("./file-system")
 {ResMakersMap, innerMakers} = require("./res-maker")
 
-
-syncSrcToTmp = (root) ->
-    srcFileSystem = FileSystem.createFromDisk("#{root}/src/")
-    tmpFileSystem = FileSystem.createFromDisk("#{root}/tmp/")
+syncSrcToTmp = (rootPath) ->
+    srcFileSystem = FileSystem.createFromDisk("#{rootPath}/src/")
+    tmpFileSystem = FileSystem.createFromDisk("#{rootPath}/tmp/")
     # update resource
     infosArray = srcFileSystem.mapFileInfos (srcInfo) ->
         # need compile ?
@@ -35,7 +34,7 @@ syncSrcToTmp = (root) ->
     return virFileSystem
 
 genStaticPage = (virFileSystem) ->
-    rlsFileSystem = FileSystem.createFromDisk("#{root}/rls/")
+    rlsFileSystem = FileSystem.createFromDisk("#{rootPath}/rls/")
     virFileSystem.forEachFiles (virInfo) ->
         if "_.json" == virInfo.shortName
             # ...
