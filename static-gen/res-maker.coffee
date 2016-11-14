@@ -4,10 +4,8 @@
 
 path = require("path").posix
 coffee = require("coffeescript")
-stylus = require("stylus")
 markdown = require("markdown-it")
 error = require("./error")
-
 
 class ResMaker
     constructor: () ->
@@ -105,7 +103,6 @@ ResMakersMap.merge = (ins1, ins2) ->
         ins._map[maker._srcExt] = maker
         ins.length = instance.length + 1
     return ins
-
 
 coffeeMaker = ResMaker.create ".coffee", ".js", "utf8", (srcBuffer) ->
     return

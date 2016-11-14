@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/NaNuNoo/Matcha/issues"
   },
-  "homepage": "https://github.com/NaNuNoo/Matcha#readme"
+  "homepage": "https://github.com/NaNuNoo/Matcha#readme",
+  "dependencies": {
+      "art-template": ">=3.0.3",
+      "coffee-script": ">=1.11.1",
+      "less": ">=3.0.0",
+      "markdown-it": ">=8.1.0"
+  }
 }
