@@ -3,7 +3,7 @@
 # # # # # # # # # # # # # # # # # # # #
 
 fs = require("fs")
-path = require("name").posix
+path = require("path").posix
 
 FileInfo = (name, diskName, mtime) ->
     @name = name
@@ -43,17 +43,25 @@ class MappingFileSystem
             resultLen = resultLen + 1
         return resultArray
 
-    readFile: (name, encoding) ->
+    _read_ = (name) ->
         fileInfo = @_filesMap[name]
         if fileInfo
-            return fs.readFileSync(fileInfo.diskName, encoding)
+            return fileInfo
         else
             throw new Error("File not found: #{name}")
 
-    writeFile: (name, buffer) ->
+    readFile: (name, encoding) ->
+        fileInfo = _read_(name)
+        return fs.readFileSync(fileInfo.diskName, encoding)
+
+    readStream = (name, encoding) ->
+        fileInfo = _read_(name)
+        return fs.createReadStream(fileInfo.diskName, encoding)
+
+    _write_: (name) ->
         fileInfo = @_filesMap[name]
         if fileInfo
-            return fs.writeFileSync(fileInfo.diskName, buffer)
+            return fileInfo
         else
             prevDirInfo = @_dirsMap[""]
             for idx in [0...name.length] by 1
@@ -63,11 +71,20 @@ class MappingFileSystem
                     if not dirInfo
                         prevDirInfo.children = prevDirInfo.children + 1
                         @_dirsMap[dirPath] = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
+                        fs.mkdirSync("#{@rootPath}/#{dirPath}")
                     prevDirInfo = dirInfo
             prevDirInfo.children = prevDirInfo.children + 1
             @_filesMap[fileInfo.name] = new FileInfo(name, "#{@rootPath}/#{name}")
             @_filesLen = @_filesLen + 1
-            return fs.writeFileSync(fileInfo.diskName, buffer)
+            return fileInfo
+
+    writeFile: (name, buffer) ->
+        fileInfo = _write_(name)
+        return fs.writeFile(fileInfo.diskName, buffer)
+
+    writeStream: (name, buffer) ->
+        fileInfo = _write_(name)
+        return fs.writeFile(fileInfo.diskName, buffer)
 
     removeFile: (name) ->
         fileInfo = @_filesMap[name]
@@ -81,32 +98,33 @@ class MappingFileSystem
                 if "/" == name[idx]
                     dirPath = name[...idx]
                     dirInfo = @_dirsMap[dirPath]
-                    if dirInfo.children > 1
-                        break
-                    else
+                    if dirInfo.children <= 1
                         fs.rmdirSync(info.diskName)
                         delete @_dirsMap[dirPath]
+                    else
+                        dirInfo.children = dirInfo.children - 1
+                        return
+        return
+
+    _syncToDisk_: (parent, diskParent) ->
+        filesArray = fs.readdirSync(diskParent)
+        @_dirsMap[parent] = new DirInfo(parent, diskParent, filesArray.length)
+        for file in filesArray
+            child = "#{parent}/#{file}"
+            diskChild = "#{@rootPath}/#{parent}/#{file}"
+            stat = fs.statSync(diskChild)
+            if stat.isFile()
+                @_filesMap[child] = new FileInfo(child, diskChild, stat.mtime)
+                @_filesLen = @_filesLen + 1
+            else if stat.isDirectory()
+                return _syncToDisk_(child, diskChild)
         return
 
     syncToDisk: () ->
         @_filesMap = Object.create(null)
         @_filesLen = 0
         @_dirsMap = Object.create(null)
-        thiz = this
-        _syncToDisk_ = (parent, diskParent) ->
-            filesArray = fs.readdirSync(diskParent)
-            thiz._dirsMap[parent] = new DirInfo(parent, diskParent, filesArray.length)
-            for file in filesArray
-                child = "#{parent}/#{file}"
-                diskChild = "#{thiz.rootPath}/#{parent}/#{file}"
-                stat = fs.statSync(diskChild)
-                if stat.isFile()
-                    thiz._filesMap[child] = new FileInfo(child, diskChild, stat.mtime)
-                    thiz._filesLen = thiz._filesLen + 1
-                else if stat.isDirectory()
-                    return _syncToDisk_(child, diskChild)
-            return
-        _syncToDisk_("", @rootPath)
+        @_syncToDisk_("", @rootPath)
         return
 
 MappingFileSystem.create = (rootPath) ->
