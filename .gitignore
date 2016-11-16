@@ -1,0 +1,4 @@
+node_modules/
+atom-ins/*.js
+push-sync/*.js
+static-gen/*.js
