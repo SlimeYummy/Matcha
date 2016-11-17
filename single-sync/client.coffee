@@ -19,10 +19,10 @@ clientHelloWorld = () ->
     return
 
 clientSyncStart = (fileSystem) ->
-    infosArray = fileSystem.mapFileInfos (info) ->
-        return info
-    infosText = JSON.stringify infosArray
-    inStream = stream.createFromString infosText
+    filesMap = Object.create(null)
+    fileSystem.forEach (info) ->
+        filesMap[info.name] = info.mtime
+    filesJson = JSON.stringify filesMap
     options = {
         host: NET_HOST
         port: NET_PORT
@@ -39,42 +39,49 @@ clientSyncStart = (fileSystem) ->
             for file in json.deleteArray
                 info += "#{Delete} - #{file}\n"
             console.log(info)
-    httpJson options, inStream, callback
+    httpJson options, filesJson, callback
     return
 
-clientSyncData = (fileSystem, updateArray) ->
+clientSyncData = (fileSystem, fileNamesArray) ->
     startCount = 0
-    finishCount = -def.MAX_PARALLEL
-    transferData = () ->
-        finishCount = finishCount + 1
-        if finishCount < updateArray.length
-            clientSyncFinish()
-        if startCount < updateArray.length
-            subPath = updateArray[startCount]
-            startCount = startCount + 1
-        try
-            request = http.request({
-                host: NET_HOST
-                port: NET_PORT
-                method: "POST"
-                path: PATH_SYNC_DATA
-            })
-            request.setTimeout CLIENT_TIMEOUT, () ->
-                printTimeOut(PATH_SYNC_DATA)
-                transferData()
-            request.on "response", (response) ->
-                readStreamJson response, (err, json) ->
-                    if err
-                        printERR(PATH_SYNC_DATA, err)
-                    else if "OK" != json.status
-                        printERR(PATH_SYNC_DATA, json)
-                    else
-                        console.log("#{Update} - #{file}\n")
-                    transferData()
-            readStream = readFile(rootPath, subPath)
-            readStream.pipe(request)
-            updateParallel = updateParallel + 1
-        catch err
-            printERR(PATH_SYNC_DATA, err)
-            transferData()
+    finishCount = 0
+    transferFunc = () ->
+        fileName = fileNamesArray[startCount]
+        startCount = startCount + 1
+        fileStream = fileStream.readStream(fileName)
+        options = {
+            host: NET_HOST
+            port: NET_PORT
+            method: "POST"
+            path: PATH_SYNC_DATA
+        }
+        callback = (error, json) ->
+            if error
+                printERR(PATH_SYNC_DATA, error)
+            else if "OK" != json.status
+                printERR(PATH_SYNC_DATA, json)
+            else
+                console.log("#{Update} - #{file}\n")
+            if startCount < fileNamesArray.length
+                transferFunc()
+            finishCount = finishCount + 1
+            if finishCount >= fileNamesArray.length
+                # next
+    return
+
+clientSyncFinish = () ->
+    options = {
+        method: "GET"
+        host: NET_HOST
+        port: NET_PORT
+        path: PATH_SYNC_DATA
+    }
+    callback = (error, json) ->
+        if error
+            print()
+        else if "OK" != json.status
+            print()
+        else
+            print(json.info)
+    httpJson(options, null, callback)
     return

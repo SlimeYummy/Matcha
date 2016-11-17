@@ -4,20 +4,24 @@
 
 http = require("http")
 
-httpStream = (options, inStream, callback) ->
+httpStream = (options, reqData, callback) ->
     request = http.request(options)
     request.setTimeout CLIENT_TIMEOUT, () ->
         callback()
     request.on "error", (error) ->
         callback(error)
-    request.on "response", (outStream) ->
-        callback(null, outStream)
-    if inStream
-        inStream.pipe(request)
+    request.on "response", (resData) ->
+        callback(null, resData)
+    if request
+        if "function" == request.pipe # stream
+            request.pipe(reqData)
+        else
+            request.write(reqBody)
+            request.end()
     return
 
-httpText = (options, inStream, callback) ->
-    httpRequest options, inStream, (error, outStream) ->
+httpText = (options, reqData, callback) ->
+    httpRequest options, reqData, (error, outStream) ->
         if error
             callback(error, null)
         else
@@ -31,8 +35,8 @@ httpText = (options, inStream, callback) ->
                 callback(null, text)
     return
 
-httpJson = (options, inStream, callback) ->
-    httpRequest options, inStream, (error, outStream) ->
+httpJson = (options, reqData, callback) ->
+    httpRequest options, reqData, (error, outStream) ->
         if error
             callback(error, null)
         else
