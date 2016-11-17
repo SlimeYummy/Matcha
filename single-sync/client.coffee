@@ -2,6 +2,7 @@
 # client.coffee
 # # # # # # # # # # # # # # # # # # # #
 
+stream = require("stream")
 {MappingFileSystem} = require("../util/file-system")
 {def} = require("./define")
 
@@ -17,13 +18,18 @@ clientHelloWorld = () ->
                 console.log(text)
     return
 
-clientSyncStart = (folder) ->
-    httpJson {
+clientSyncStart = (fileSystem) ->
+    infosArray = fileSystem.mapFileInfos (info) ->
+        return info
+    infosText = JSON.stringify infosArray
+    inStream = stream.createFromString infosText
+    options = {
         host: NET_HOST
         port: NET_PORT
         method: "POST"
         path: PATH_SYNC_START
-    }, (error, json) ->
+    }
+    callback = (error, json) ->
         if err
             printERR(PATH_SYNC_START, err)
         else if "OK" != json.status
@@ -33,15 +39,12 @@ clientSyncStart = (folder) ->
             for file in json.deleteArray
                 info += "#{Delete} - #{file}\n"
             console.log(info)
-    request.on "error"
-    fileMap = scanFolder(folder)
-    request.write(fileMap)
-    request.end()
+    httpJson options, inStream, callback
     return
 
-clientSyncData = (rootPath, updateArray) ->
+clientSyncData = (fileSystem, updateArray) ->
     startCount = 0
-    finishCount = -MAX_PARALLEL
+    finishCount = -def.MAX_PARALLEL
     transferData = () ->
         finishCount = finishCount + 1
         if finishCount < updateArray.length

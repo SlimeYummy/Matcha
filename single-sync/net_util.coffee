@@ -4,42 +4,44 @@
 
 http = require("http")
 
-httpStream = (httpArgs, callback) ->
-    request = http.request(httpArgs)
+httpStream = (options, inStream, callback) ->
+    request = http.request(options)
     request.setTimeout CLIENT_TIMEOUT, () ->
         callback()
     request.on "error", (error) ->
         callback(error)
-    request.on "response", (stream) ->
-        callback(null, stream)
+    request.on "response", (outStream) ->
+        callback(null, outStream)
+    if inStream
+        inStream.pipe(request)
     return
 
-httpText = (httpArgs, callback) ->
-    httpRequest httpArgs, (error, stream) ->
+httpText = (options, inStream, callback) ->
+    httpRequest options, inStream, (error, outStream) ->
         if error
             callback(error, null)
         else
-            stream.on 'data', (chunk) ->
+            outStream.on 'data', (chunk) ->
                 chunkArray.push(chunk)
             chunkArray = []
-            stream.on 'error', (error) ->
+            outStream.on 'error', (error) ->
                 callback(error, null)
-            stream.on 'end', () ->
+            outStream.on 'end', () ->
                 text = chunkArray.join()
                 callback(null, text)
     return
 
-httpJson = (httpArgs, callback) ->
-    httpRequest httpArgs, (error, stream) ->
+httpJson = (options, inStream, callback) ->
+    httpRequest options, inStream, (error, outStream) ->
         if error
             callback(error, null)
         else
-            stream.on 'error', (error) ->
+            outStream.on 'error', (error) ->
                 callback(error, null)
             chunkArray = []
-            stream.on 'data', (chunk) ->
+            outStream.on 'data', (chunk) ->
                 chunkArray.push(chunk)
-            stream.on 'end', () ->
+            outStream.on 'end', () ->
                 try
                     text = chunkArray.join()
                     json = JSON.parse(text)
