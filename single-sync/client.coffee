@@ -7,53 +7,84 @@ ssh = require("ssh2")
 {MappingFileSystem} = require("../util/file-system")
 {def} = require("./define")
 
-createSftpRead = (sftpClient, localPath, remotePath, callback) ->
-    return (error) ->
-        if error
-            #
-        else
-            sftpClient.fastGet remotePath, localPath, callback
+class RemoteFileSystem
+    _sftpRead_ = (localPath, remotePath, callback) ->
+        return (error) ->
+            if error
+                callback(error)
+            else
+                @_sftp.fastGet(remotePath, localPath, callback)
 
-createSftpWrite = (sftpClient, localPath, remotePath, callback)) ->
-    return (error) ->
-        if error
-            #
-        else
-            sftpClient.fastPut remotePath, localPath, callback
+    _sftpWrite_ = (localPath, remotePath, callback)) ->
+        return (error) ->
+            if error
+                callback(error)
+            else
+                @_sftp.fastPut(remotePath, localPath, callback)
 
-createSftpUnlink = (sftpClient, remotePath, callback)) ->
-    return (error) ->
-        if error
-            #
-        else
-            sftpClient.unlink remotePath, localPath, callback
+    _sftpUnlink_ = (remotePath, callback)) ->
+        return (error) ->
+            if error
+                callback(error)
+            else
+                @_sftp.unlink(remotePath, callback)
 
-createSftpmkDir = (sftpClient, remotePath, callback)) ->
-    return (error) ->
-        if error
-            #
-        else
-            sftpClient.mkdir remotePath, localPath, callback
+    _sftpMkdir_ = (remotePath, callback)) ->
+        return (error) ->
+            if error
+                callback(error)
+            else
+                @_sftp.mkdir(remotePath, callback)
 
-createSftprmDir = (sftpClient, remotePath, callback)) ->
-    return (error) ->
-        if error
-            #
-        else
-            sftpClient.rmdir remotePath, localPath, callback
+    _sftpRmdir_ = (sftpClient, remotePath, callback)) ->
+        return (error) ->
+            if error
+                callback(error)
+            else
+                @_sftp.rmdir(remotePath, callback)
 
-class RemoteFs
-    readFile: (name) ->
+    readFile: (remotePath, localPath, callback) ->
+        if not @_filesMap[remotePath]
+            process.nextTick(callback, new Error(""))
+        else
+            readFunc = @_sftpRead_(remotePath, localPath, callback)
+            readFunc(null)
         return
 
-    writeFile: (name) ->
+    writeFile: (remotePath, localPath, callback) ->
+        entryFunc = @_sftpWrite_(remotePath, localPath, callback)
+        for idx in [remotePath.length-1..0] by -1
+            if "/" == remotePath[idx]
+                subPath = remotePath[...idx]
+                if not @_dirsMap[subPath]
+                    @_dirsMap[subPath] = 1
+                    entryFunc = @_sftpMkdir_(subPath, entryFunc)
+                else
+                    @_dirsMap[subPath] = @_dirsMap[subPath] + 1
+                    break
+        entryFunc(null)
         return
 
-    removeFile: (name) ->
+    removeFile: (remotePath, callback) ->
+        if not @_filesMap[remotePath]
+            process.nextTick(callback, new Error(""))
+        else
+            entryFunc = @_sftpUnlink_(remotePath, callback)
+            for idx in [remotePath.length-1..0] by -1
+                if "/" == remotePath[idx]
+                    subPath = remotePath[...idx]
+                    @_dirsMap[subPath] = @_dirsMap[subPath] - 1
+                    if 0 == @_dirsMap[subPath]
+                        delete @_dirsMap[subPath]
+                        entryFunc = @_sftpRmdir_(subPath, entryFunc)
+                    else
+                        @_dirsMap[subPath] = @_dirsMap[subPath] + 1
+                        break
+            entryFunc(null)
         return
 
-RemoteFs.create(rootPath, callback) ->
-    ins = new RemoteFs()
+RemoteFileSystem.create(rootPath, callback) ->
+    ins = new RemoteFileSystem()
     ins._rootPath = path.normalize("#{rootPath}/")[...-1]
     ins._filesMap = Object.create(null)
     ins._dirsMap = Object.create(null)
