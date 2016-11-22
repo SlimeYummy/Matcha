@@ -19,9 +19,9 @@ class DirInfo
         @children = children
         return
 
-class RemoteFileSystem
+class RemoteFs
     constructor: () ->
-        @_rootPath = ""
+        @rootPath = ""
         @_sshClient = null
         @_sftpClient = null
         @_dirsMap = Object.create(null)
@@ -104,9 +104,9 @@ class RemoteFileSystem
                     break
         return promise
 
-RemoteFileSystem.create = (options, rootPath) ->
-    ins = new RemoteFileSystem()
-    ins._rootPath = path.normalize("#{rootPath}/")[...-1]
+RemoteFs.create = (options, rootPath) ->
+    ins = new RemoteFs()
+    ins.rootPath = path.normalize("#{rootPath}/")[...-1]
     initSSH = (resolve, reject) ->
         ins._sshClient = new ssh.Client()
         ins._sshClient.connect(options)
@@ -124,7 +124,7 @@ RemoteFileSystem.create = (options, rootPath) ->
                 return resolve()
         return new Promise(initSFTP)
     .then () ->
-        parentStack = ["", ins._rootPath]
+        parentStack = ["", ins.rootPath]
         travelDir = (resolve, reject) ->
             parent = parentStack.shift()
             remoteParent = parentStack.shift()
@@ -135,7 +135,7 @@ RemoteFileSystem.create = (options, rootPath) ->
                 ins._dirsMap[parent] = new DirInfo(parent, remoteParent, infosArray.length)
                 for info in infosArray
                     child = "#{parent}/#{info.filename}"
-                    remoteChild = "#{ins._rootPath}/#{parent}/#{info.filename}"
+                    remoteChild = "#{ins.rootPath}/#{parent}/#{info.filename}"
                     if "d" == info.longname[0]
                         parentStack.push(child, remoteChild)
                     else
@@ -153,7 +153,7 @@ RemoteFileSystem.create = (options, rootPath) ->
             ins._sshClient.end()
         console.log(error)
 
-RemoteFileSystem.create({
+RemoteFs.create({
     host: 'fenqi.io'
     port: 22,
     username: 'nanuno',

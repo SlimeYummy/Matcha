@@ -5,7 +5,24 @@
 fs = require("fs")
 path = require("path").posix
 
-class LocalFileSystem
+class FileInfo
+    constructor: (name, diskName, mtime) ->
+        @name = name
+        @diskName = diskName
+        @baseName = path.basename(name)
+        @extName = path.extname(name)
+        @mtime = mtime or new Date()
+        return
+
+class DirInfo
+    constructor: (name, diskName, children) ->
+        @name = name
+        @diskName = diskName
+        @children = children or 0
+        return
+
+
+class LocalFs
     constructor: () ->
         @rootPath = ""
         @_filesMap = null
@@ -36,11 +53,13 @@ class LocalFileSystem
                     dirInfo = @_dirsMap[dirPath]
                     if not dirInfo
                         prevDirInfo.children = prevDirInfo.children + 1
-                        @_dirsMap[dirPath] = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
+                        dirInfo = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
+                        @_dirsMap[dirPath] = dirInfo
                         fs.mkdirSync("#{@rootPath}/#{dirPath}")
                     prevDirInfo = dirInfo
             prevDirInfo.children = prevDirInfo.children + 1
-            @_filesMap[name] = new FileInfo(name, "#{@rootPath}/#{name}")
+            fileInfo = new FileInfo(name, "#{@rootPath}/#{name}")
+            @_filesMap[name] = fileInfo
         return fs.writeFileSync(fileInfo.diskName)
 
     unlink: (name) ->
@@ -61,17 +80,17 @@ class LocalFileSystem
                     break
         return
 
-LocalFileSystem.create = (rootPath) ->
-    ins = new MappingFileSystem()
-    ins.rootPath = name.normalize("#{rootPath}/")[...-1]
+LocalFs.create = (rootPath) ->
+    ins = new LocalFs()
+    ins.rootPath = path.normalize("#{rootPath}/")
     ins._filesMap = Object.create(null)
     ins._dirsMap = Object.create(null)
     travelFunc = (parent, diskParent) ->
         filesArray = fs.readdirSync(diskParent)
         ins._dirsMap[parent] = new DirInfo(parent, diskParent, filesArray.length)
         for file in filesArray
-            child = "#{parent}/#{file}"
-            diskChild = "#{ins.rootPath}/#{parent}/#{file}"
+            diskChild = path.normalize("#{ins.rootPath}/#{parent}/#{file}")
+            child = diskChild[ins.rootPath.length...]
             stat = fs.statSync(diskChild)
             if stat.isFile()
                 ins._filesMap[child] = new FileInfo(child, diskChild, stat.mtime)
@@ -80,3 +99,11 @@ LocalFileSystem.create = (rootPath) ->
         return
     travelFunc("", rootPath)
     return ins
+
+localFs = LocalFs.create("./root")
+#console.log localFs
+
+text = "This is file new."
+localFs.write("folder_new/file_new")
+console.log localFs.read("file_111.txt", "utf8")
+#localFs.unlink("folder_new/file_new")
