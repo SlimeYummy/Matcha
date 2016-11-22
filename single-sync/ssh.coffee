@@ -2,121 +2,8 @@
 # ssh.coffee
 # # # # # # # # # # # # # # # # # # # #
 
+path = require("path").posix
 ssh = require("ssh2")
-
-class SftpFileSystem
-    constructor: () ->
-        @_sshClient = null
-        @_sftpClient = null
-        @_dirsMap = Object.create(null)
-        @_filesMap = Object.create(null)
-        return
-
-    _sftpRead_ = (localPath, remotePath, callback) ->
-        return (error) ->
-            if error
-                callback(error)
-            else
-                @_sftp.fastGet(remotePath, localPath, callback)
-
-    _sftpWrite_ = (localPath, remotePath, callback) ->
-        return (error) ->
-            if error
-                callback(error)
-            else
-                @_sftp.fastPut(remotePath, localPath, callback)
-
-    _sftpUnlink_ = (remotePath, callback) ->
-        return (error) ->
-            if error
-                callback(error)
-            else
-                @_sftp.unlink(remotePath, callback)
-
-    _sftpMkdir_ = (remotePath, callback) ->
-        return (error) ->
-            if error
-                callback(error)
-            else
-                @_sftp.mkdir(remotePath, callback)
-
-    _sftpRmdir_ = (sftpClient, remotePath, callback) ->
-        return (error) ->
-            if error
-                callback(error)
-            else
-                @_sftp.rmdir(remotePath, callback)
-
-    readFile: (remotePath, localPath, callback) ->
-        if not @_filesMap[remotePath]
-            process.nextTick(callback, new Error(""))
-        else
-            readFunc = @_sftpRead_(remotePath, localPath, callback)
-            readFunc(null)
-        return
-
-    writeFile: (remotePath, localPath, callback) ->
-        entryFunc = @_sftpWrite_(remotePath, localPath, callback)
-        for idx in [remotePath.length-1..0] by -1
-            if "/" == remotePath[idx]
-                subPath = remotePath[...idx]
-                if not @_dirsMap[subPath]
-                    @_dirsMap[subPath] = 1
-                    entryFunc = @_sftpMkdir_(subPath, entryFunc)
-                else
-                    @_dirsMap[subPath] = @_dirsMap[subPath] + 1
-                    break
-        entryFunc(null)
-        return
-
-    removeFile: (remotePath, callback) ->
-        if not @_filesMap[remotePath]
-            process.nextTick(callback, new Error(""))
-        else
-            entryFunc = @_sftpUnlink_(remotePath, callback)
-            for idx in [remotePath.length-1..0] by -1
-                if "/" == remotePath[idx]
-                    subPath = remotePath[...idx]
-                    @_dirsMap[subPath] = @_dirsMap[subPath] - 1
-                    if 0 == @_dirsMap[subPath]
-                        delete @_dirsMap[subPath]
-                        entryFunc = @_sftpRmdir_(subPath, entryFunc)
-                    else
-                        @_dirsMap[subPath] = @_dirsMap[subPath] + 1
-                        break
-            entryFunc(null)
-        return
-
-    destory: () ->
-        @_sshClient.end()
-
-scanSftpFolder = (sftpClient, rootPath) ->
-    return new Promise (resolve, reject) ->
-        rootPath = path.normalize("#{rootPath}/")[...-1]
-        filesMap = Object.create(null)
-        dirsMap = Object.create(null)
-        scanStack = new Array()
-        scanStack.push("")
-        travel = () ->
-            parent = scanStack.pop()
-            sftpParent = "#{rootPath}/#{parent}"
-            sftpClient.readdir sftpParent, (error, infosArray) ->
-                if error
-                    reject(error)
-                else
-                    dirsMap[parent] = new SftpDirInfo(parent, sftpParent, infosArray.length)
-                    for info in infosArray
-                        child = "#{parent}/#{info.filename}"
-                        if "d" == info.longname[0]
-                            scanStack.push(child)
-                        else
-                            sftpChild = "#{rootPath}/#{parent}/#{info.filename}"
-                            dirsMap[child] = new SftpFileInfo(child, sftpChild, info.attrs.mtime)
-                if scanStack.length > 0
-                    travel()
-                else
-                    resolve { filesMap, dirsMap }
-
 
 class FileInfo
     constructor: (name, sftpName, mtime) ->
@@ -141,9 +28,85 @@ class RemoteFileSystem
         @_filesMap = Object.create(null)
         return
 
-create = (options, rootPath) ->
+    _get_ = (localPath, remotePath) ->
+        sftpClient = @_sftpClient
+        return new Promise (resolve, reject) ->
+            sftpClient.fastGet remotePath, localPath, (error) ->
+                if error
+                    return reject(error)
+                return resolve()
+
+    _put_ = (localPath, remotePath) ->
+        sftpClient = @_sftpClient
+        return new Promise (resolve, reject) ->
+            sftpClient.fastPut remotePath, localPath, (error) ->
+                if error
+                    return reject(error)
+                return resolve()
+
+    _unlink_ = (remotePath) ->
+        sftpClient = @_sftpClient
+        return new Promise (resolve, reject) ->
+            sftpClient.unlink remotePath, (error) ->
+                if error
+                    return reject(error)
+                return resolve()
+
+    _mkdir_ = (remotePath) ->
+        sftpClient = @_sftpClient
+        return new Promise (resolve, reject) ->
+            sftpClient.mkdir remotePath, (error) ->
+                if error
+                    return reject(error)
+                return resolve()
+
+    _rmdir_ = (remotePath) ->
+        sftpClient = @_sftpClient
+        return new Promise (resolve, reject) ->
+            sftpClient.rmdir remotePath, (error) ->
+                if error
+                    return reject(error)
+                return resolve()
+
+    getFile: (localPath, remotePath) ->
+        if not @_filesMap[remotePath]
+            return Promise.reject(new Error("File not found : #{remotePath}"))
+        return @_get_(localPath, remotePath)
+
+    putFile: (remotePath, localPath) ->
+        entryFunc = @_sftpWrite_(remotePath, localPath, callback)
+        for idx in [remotePath.length-1..0] by -1
+            if "/" == remotePath[idx]
+                subPath = remotePath[...idx]
+                if not @_dirsMap[subPath]
+                    @_dirsMap[subPath] = 1
+                    entryFunc = @_sftpMkdir_(subPath, entryFunc)
+                else
+                    @_dirsMap[subPath] = @_dirsMap[subPath] + 1
+                    break
+        entryFunc(null)
+        return
+
+    removeFile: (remotePath, callback) ->
+        if not @_filesMap[remotePath]
+            return Promise.reject(new Error("File not found : #{remotePath}"))
+        promise = @_unlink_(remotePath)
+        for idx in [remotePath.length-1..0] by -1
+            if "/" == remotePath[idx]
+                subPath = remotePath[...idx]
+                @_dirsMap[subPath] = @_dirsMap[subPath] - 1
+                if 0 == @_dirsMap[subPath]
+                    delete @_dirsMap[subPath]
+                    promise = promise.then () ->
+                        return @_rmdir_(subPath)
+                else
+                    @_dirsMap[subPath] = @_dirsMap[subPath] + 1
+                    break
+        return promise
+
+RemoteFileSystem.create = (options, rootPath) ->
     ins = new RemoteFileSystem()
-    ins._rootPath = rootPath
+    ins._rootPath = path.normalize("#{rootPath}/")[...-1]
     initSSH = (resolve, reject) ->
         ins._sshClient = new ssh.Client()
         ins._sshClient.connect(options)
@@ -161,7 +124,7 @@ create = (options, rootPath) ->
                 return resolve()
         return new Promise(initSFTP)
     .then () ->
-        parentStack = [".", ins._rootPath]
+        parentStack = ["", ins._rootPath]
         travelDir = (resolve, reject) ->
             parent = parentStack.shift()
             remoteParent = parentStack.shift()
@@ -190,9 +153,9 @@ create = (options, rootPath) ->
             ins._sshClient.end()
         console.log(error)
 
-create({
+RemoteFileSystem.create({
     host: 'fenqi.io'
     port: 22,
     username: 'nanuno',
     password: "jbcnmb8888"
-}, ".")
+}, "/home/nanuno")
