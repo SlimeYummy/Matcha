@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # #
-# fs_local_fs.coffee
+# local_fs.coffee
 # # # # # # # # # # # # # # # # # # # #
 
 fs = require("fs")
@@ -60,7 +60,7 @@ class LocalFs
             prevDirInfo.children = prevDirInfo.children + 1
             fileInfo = new FileInfo(name, "#{@rootPath}/#{name}")
             @_filesMap[name] = fileInfo
-        return fs.writeFileSync(fileInfo.diskName)
+        return fs.writeFileSync(fileInfo.diskName, buffer)
 
     unlink: (name) ->
         fileInfo = @_filesMap[name]
@@ -73,7 +73,7 @@ class LocalFs
                 dirPath = name[...idx]
                 dirInfo = @_dirsMap[dirPath]
                 if dirInfo.children <= 1
-                    fs.rmdirSync(info.diskName)
+                    fs.rmdirSync(dirInfo.diskName)
                     delete @_dirsMap[dirPath]
                 else
                     dirInfo.children = dirInfo.children - 1
@@ -100,10 +100,12 @@ LocalFs.create = (rootPath) ->
     travelFunc("", rootPath)
     return ins
 
-localFs = LocalFs.create("./root")
+exports.LocalFs = LocalFs
+
+#localFs = LocalFs.create("./root")
 #console.log localFs
 
-text = "This is file new."
-localFs.write("folder_new/file_new")
-console.log localFs.read("file_111.txt", "utf8")
-#localFs.unlink("folder_new/file_new")
+#text = "This is file new."
+#localFs.write("folder_new/file_new", text)
+#console.log localFs.read("folder_new/file_new", "utf8")
+#localFs.unlink("folder_new/file_new11")

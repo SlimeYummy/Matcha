@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # #
-# ssh.coffee
+# remote_fs.coffee
 # # # # # # # # # # # # # # # # # # # #
 
 path = require("path").posix
@@ -26,6 +26,14 @@ class RemoteFs
         @_sftpClient = null
         @_dirsMap = Object.create(null)
         @_filesMap = Object.create(null)
+        return
+
+    find: (name) ->
+        return @_filesMap[name]
+
+    forEach: (func) ->
+        for _, fileInfo of @_filesMap
+            func(fileInfo)
         return
 
     _get_ = (localPath, remotePath) ->
@@ -68,13 +76,13 @@ class RemoteFs
                     return reject(error)
                 return resolve()
 
-    getFile: (localPath, remotePath) ->
+    downland: (localPath, remotePath) ->
         if not @_filesMap[remotePath]
             return Promise.reject(new Error("File not found : #{remotePath}"))
         return @_get_(localPath, remotePath)
 
-    putFile: (remotePath, localPath) ->
-        entryFunc = @_sftpWrite_(remotePath, localPath, callback)
+    upland: (remotePath, localPath) ->
+        entryFunc = @_sftpWrite_(remotePath, localPath)
         for idx in [remotePath.length-1..0] by -1
             if "/" == remotePath[idx]
                 subPath = remotePath[...idx]
@@ -87,7 +95,7 @@ class RemoteFs
         entryFunc(null)
         return
 
-    removeFile: (remotePath, callback) ->
+    remove: (remotePath, callback) ->
         if not @_filesMap[remotePath]
             return Promise.reject(new Error("File not found : #{remotePath}"))
         promise = @_unlink_(remotePath)
@@ -106,7 +114,7 @@ class RemoteFs
 
 RemoteFs.create = (options, rootPath) ->
     ins = new RemoteFs()
-    ins.rootPath = path.normalize("#{rootPath}/")[...-1]
+    ins.rootPath = path.normalize("#{rootPath}/")
     initSSH = (resolve, reject) ->
         ins._sshClient = new ssh.Client()
         ins._sshClient.connect(options)
@@ -134,8 +142,8 @@ RemoteFs.create = (options, rootPath) ->
                     return reject(error)
                 ins._dirsMap[parent] = new DirInfo(parent, remoteParent, infosArray.length)
                 for info in infosArray
-                    child = "#{parent}/#{info.filename}"
-                    remoteChild = "#{ins.rootPath}/#{parent}/#{info.filename}"
+                    remoteChild = path.normalize("#{ins.rootPath}/#{parent}/#{info.filename}")
+                    child = remoteChild[ins.rootPath.length...]
                     if "d" == info.longname[0]
                         parentStack.push(child, remoteChild)
                     else
@@ -146,8 +154,7 @@ RemoteFs.create = (options, rootPath) ->
                     return resolve()
         return new Promise(travelDir)
     .then () ->
-        console.log ins._filesMap
-        console.log ins._dirsMap
+        return ins
     .catch (error) ->
         if ins._sshClient
             ins._sshClient.end()
@@ -159,3 +166,5 @@ RemoteFs.create({
     username: 'nanuno',
     password: "jbcnmb8888"
 }, "/home/nanuno")
+
+exports.RemoteFs = RemoteFs
