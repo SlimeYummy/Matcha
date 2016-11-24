@@ -4,18 +4,19 @@
 
 path = require("path").posix
 ssh = require("ssh2")
+{coroutine} = require("./async_util.coffee")
 
 class FileInfo
-    constructor: (name, sftpName, mtime) ->
+    constructor: (name, diskName, mtime) ->
         @name = name
-        @remoteName = sftpName
-        @mtime = mtime
+        @diskName = diskName
+        @mtime = mtime or new Date()
         return
 
 class DirInfo
-    constructor: (name, sftpName, children) ->
+    constructor: (name, diskName, children) ->
         @name = name
-        @remoteName = sftpName
+        @diskName = diskName
         @children = children
         return
 
@@ -36,81 +37,97 @@ class RemoteFs
             func(fileInfo)
         return
 
-    _get_ = (localPath, remotePath) ->
+    _get_ = (remoteDiskPath, localDiskPath) ->
         sftpClient = @_sftpClient
         return new Promise (resolve, reject) ->
-            sftpClient.fastGet remotePath, localPath, (error) ->
+            sftpClient.fastGet remoteDiskPath, localDiskPath, (error) ->
                 if error
                     return reject(error)
                 return resolve()
 
-    _put_ = (localPath, remotePath) ->
+    _put_ = (remoteDiskPath, localDiskPath) ->
         sftpClient = @_sftpClient
         return new Promise (resolve, reject) ->
-            sftpClient.fastPut remotePath, localPath, (error) ->
+            sftpClient.fastPut remoteDiskPath, localDiskPath, (error) ->
                 if error
                     return reject(error)
                 return resolve()
 
-    _unlink_ = (remotePath) ->
+    _unlink_ = (remoteDiskPath) ->
         sftpClient = @_sftpClient
         return new Promise (resolve, reject) ->
-            sftpClient.unlink remotePath, (error) ->
+            sftpClient.unlink remoteDiskPath, (error) ->
                 if error
                     return reject(error)
                 return resolve()
 
-    _mkdir_ = (remotePath) ->
+    _mkdir_ = (remoteDiskPath) ->
         sftpClient = @_sftpClient
         return new Promise (resolve, reject) ->
-            sftpClient.mkdir remotePath, (error) ->
+            sftpClient.mkdir remoteDiskPath, (error) ->
                 if error
                     return reject(error)
                 return resolve()
 
-    _rmdir_ = (remotePath) ->
+    _rmdir_ = (remoteDiskPath) ->
         sftpClient = @_sftpClient
         return new Promise (resolve, reject) ->
-            sftpClient.rmdir remotePath, (error) ->
+            sftpClient.rmdir remoteDiskPath, (error) ->
                 if error
                     return reject(error)
                 return resolve()
 
-    downland: (localPath, remotePath) ->
+    downland: (remotePath, localDiskPath) ->
+        info = @_filesMap[remotePath]
+        if not info
+            return Promise.reject(new Error("File not found : #{remotePath}"))
+        return @_get_(info.diskName, localDiskPath)
+
+    upland: (remotePath, localDiskPath) ->
+        fileInfo = @_filesMap[remotePath]
+        if fileInfo
+            return @_sftpWrite_(fileInfo.diskName, localDiskPath)
+        return coroutine () ->
+            # create folder
+            prevDirInfo = @_dirsMap[""]
+            for idx in [0...remotePath.length] by 1
+                if "/" == remotePath[idx]
+                    subPath = remotePath[...idx]
+                    dirInfo = @_dirsMap[subPath]
+                    if not dirInfo
+                        prevDirInfo.children = prevDirInfo.children + 1
+                        dirInfo = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
+                        @_dirsMap[dirPath] = dirInfo
+                        yield @_sftpMkdir_(subPath)
+                    prevDirInfo = dirInfo
+            # create file
+            prevDirInfo.children = prevDirInfo.children + 1
+            fileInfo = new FileInfo(remotePath, "#{@rootPath}/#{remotePath}")
+            @_filesMap[remotePath] = fileInfo
+            # write file
+            yield @_sftpWrite_(remotePath, localDiskPath)
+            return
+
+    remove: (remotePath) ->
+        fileInfo = @_filesMap[remotePath]
         if not @_filesMap[remotePath]
             return Promise.reject(new Error("File not found : #{remotePath}"))
-        return @_get_(localPath, remotePath)
-
-    upland: (remotePath, localPath) ->
-        entryFunc = @_sftpWrite_(remotePath, localPath)
-        for idx in [remotePath.length-1..0] by -1
-            if "/" == remotePath[idx]
-                subPath = remotePath[...idx]
-                if not @_dirsMap[subPath]
-                    @_dirsMap[subPath] = 1
-                    entryFunc = @_sftpMkdir_(subPath, entryFunc)
-                else
-                    @_dirsMap[subPath] = @_dirsMap[subPath] + 1
-                    break
-        entryFunc(null)
-        return
-
-    remove: (remotePath, callback) ->
-        if not @_filesMap[remotePath]
-            return Promise.reject(new Error("File not found : #{remotePath}"))
-        promise = @_unlink_(remotePath)
-        for idx in [remotePath.length-1..0] by -1
-            if "/" == remotePath[idx]
-                subPath = remotePath[...idx]
-                @_dirsMap[subPath] = @_dirsMap[subPath] - 1
-                if 0 == @_dirsMap[subPath]
-                    delete @_dirsMap[subPath]
-                    promise = promise.then () ->
-                        return @_rmdir_(subPath)
-                else
-                    @_dirsMap[subPath] = @_dirsMap[subPath] + 1
-                    break
-        return promise
+        return coroutine () ->
+            # remove file
+            delete @_filesMap[remotePath]
+            yield @_unlink_(remotePath)
+            # remove folder
+            for idx in [remotePath.length-1..0] by -1
+                if "/" == remotePath[idx]
+                    subPath = remotePath[...idx]
+                    dirInfo = @_dirsMap[subPath]
+                    dirInfo.children = dirInfo.children - 1
+                    if 0 == @_dirsMap[subPath]
+                        delete @_dirsMap[subPath]
+                        yield @_rmdir_(subPath)
+                    else
+                        break
+            return
 
 RemoteFs.create = (options, rootPath) ->
     ins = new RemoteFs()

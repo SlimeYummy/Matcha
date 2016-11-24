@@ -45,21 +45,25 @@ class LocalFs
 
     write: (name, buffer) ->
         fileInfo = @_filesMap[name]
-        if not fileInfo
-            prevDirInfo = @_dirsMap[""]
-            for idx in [0...name.length] by 1
-                if "/" == name[idx]
-                    dirPath = name[...idx]
-                    dirInfo = @_dirsMap[dirPath]
-                    if not dirInfo
-                        prevDirInfo.children = prevDirInfo.children + 1
-                        dirInfo = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
-                        @_dirsMap[dirPath] = dirInfo
-                        fs.mkdirSync("#{@rootPath}/#{dirPath}")
-                    prevDirInfo = dirInfo
-            prevDirInfo.children = prevDirInfo.children + 1
-            fileInfo = new FileInfo(name, "#{@rootPath}/#{name}")
-            @_filesMap[name] = fileInfo
+        if fileInfo
+            return fs.writeFileSync(fileInfo.diskName, buffer)
+        # create folder
+        prevDirInfo = @_dirsMap[""]
+        for idx in [0...name.length] by 1
+            if "/" == name[idx]
+                dirPath = name[...idx]
+                dirInfo = @_dirsMap[dirPath]
+                if not dirInfo
+                    prevDirInfo.children = prevDirInfo.children + 1
+                    dirInfo = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
+                    @_dirsMap[dirPath] = dirInfo
+                    fs.mkdirSync("#{@rootPath}/#{dirPath}")
+                prevDirInfo = dirInfo
+        # create file
+        prevDirInfo.children = prevDirInfo.children + 1
+        fileInfo = new FileInfo(name, "#{@rootPath}/#{name}")
+        @_filesMap[name] = fileInfo
+        # write file
         return fs.writeFileSync(fileInfo.diskName, buffer)
 
     unlink: (name) ->

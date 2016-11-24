@@ -41,31 +41,50 @@ coroutine = (generator, argument) ->
 
     return new Promise(wrapPromise)
 
-promise = (promiseFunc) ->
-    return new Promise(promiseFunc)
-
 exports.coroutine = coroutine
-exports.promise = promise
 
 
 
 ###
-###
-
-func = (num) ->
+func1 = (num) ->
     console.log num
-    num = yield promise (resolve, reject) ->
+    num = yield new Promise (resolve, reject) ->
         setImmediate () ->
             resolve(4)
     console.log num
-    num = yield promise (resolve, reject) ->
+    num = yield new Promise (resolve, reject) ->
         setImmediate () ->
             resolve(5)
     console.log num
     return 6
-
-coroutine func, 3
+coroutine func1, 3
 .then (resNum) ->
     console.log resNum
 .catch (error) ->
     console.log error
+
+func2 = () ->
+    try
+        yield () ->
+    catch e
+        console.log "#{e.message}"
+coroutine func2
+.catch (error) ->
+    console.log error
+
+func3 = () ->
+    throw new Error("In Gemerator.")
+    yield new Promise () ->
+        return
+coroutine func3
+.catch (error) ->
+    console.log "#{error.message}"
+
+func4 = () ->
+    try
+        yield new Promise () ->
+            throw new Error("In Promise.")
+    catch error
+        console.log "#{error.message}"
+coroutine func4
+###
