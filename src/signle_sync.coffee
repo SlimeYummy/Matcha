@@ -6,6 +6,7 @@
 {RemoteFs} = require("./remote_fs.coffee")
 
 signleSync = (sshOptions, remotePath, localFs) ->
+    
     $remoteFs = null
     $uplandArray = []
     RemoteFs.create(sshOptions, remotePath)

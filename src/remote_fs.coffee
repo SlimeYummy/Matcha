@@ -37,46 +37,6 @@ class RemoteFs
             func(fileInfo)
         return
 
-    _get_ = (remoteDiskPath, localDiskPath) ->
-        sftpClient = @_sftpClient
-        return new Promise (resolve, reject) ->
-            sftpClient.fastGet remoteDiskPath, localDiskPath, (error) ->
-                if error
-                    return reject(error)
-                return resolve()
-
-    _put_ = (remoteDiskPath, localDiskPath) ->
-        sftpClient = @_sftpClient
-        return new Promise (resolve, reject) ->
-            sftpClient.fastPut remoteDiskPath, localDiskPath, (error) ->
-                if error
-                    return reject(error)
-                return resolve()
-
-    _unlink_ = (remoteDiskPath) ->
-        sftpClient = @_sftpClient
-        return new Promise (resolve, reject) ->
-            sftpClient.unlink remoteDiskPath, (error) ->
-                if error
-                    return reject(error)
-                return resolve()
-
-    _mkdir_ = (remoteDiskPath) ->
-        sftpClient = @_sftpClient
-        return new Promise (resolve, reject) ->
-            sftpClient.mkdir remoteDiskPath, (error) ->
-                if error
-                    return reject(error)
-                return resolve()
-
-    _rmdir_ = (remoteDiskPath) ->
-        sftpClient = @_sftpClient
-        return new Promise (resolve, reject) ->
-            sftpClient.rmdir remoteDiskPath, (error) ->
-                if error
-                    return reject(error)
-                return resolve()
-
     downland: (remotePath, localDiskPath) ->
         info = @_filesMap[remotePath]
         if not info
@@ -129,47 +89,87 @@ class RemoteFs
                         break
             return
 
-RemoteFs.create = (options, rootPath) ->
-    ins = new RemoteFs()
-    ins.rootPath = path.normalize("#{rootPath}/")
-    initSSH = (resolve, reject) ->
-        ins._sshClient = new ssh.Client()
-        ins._sshClient.connect(options)
-        ins._sshClient.on "error", (error) ->
+createSshLink = (options) ->
+    return new Promise (resolve, reject) ->
+        sshClient = new ssh.Client()
+        sshClient.connect(options)
+        sshClient.on "error", (error) ->
             return reject(error)
-        ins._sshClient.on "ready", () ->
+        sshClient.on "ready", () ->
+            return resolve(sshClient)
+
+createSftpLink = (sshClient, options) ->
+    return new Promise (resolve, reject) ->
+        sshClient.sftp (error, sftpClient) ->
+            if error
+                return reject(error)
+            return resolve(sftpClient)
+
+sftpUpland = (sftpClient, remotePath, localPath) ->
+    return new Promise (resolve, reject) ->
+        sftpClient.fastGet remotePath, localPath, (error) ->
+            if error
+                return reject(error)
             return resolve()
-    return new Promise(initSSH)
-    .then () ->
-        initSFTP = (resolve, reject) ->
-            ins._sshClient.sftp (error, sftpClient) ->
-                if error
-                    return reject(error)
-                ins._sftpClient = sftpClient
-                return resolve()
-        return new Promise(initSFTP)
-    .then () ->
+
+sftpDownland = (sftpClient, remotePath, localPath) ->
+    return new Promise (resolve, reject) ->
+        sftpClient.fastPut remotePath, localPath, (error) ->
+            if error
+                return reject(error)
+            return resolve()
+
+sftpUnlink = (sftpClient, remotePath) ->
+    return new Promise (resolve, reject) ->
+        sftpClient.unlink remotePath, (error) ->
+            if error
+                return reject(error)
+            return resolve()
+
+sftpReaddir = (sftpClient, remotePath) ->
+    return new Promise (resolve, reject) ->
+        sftpClient.readdir remotePath, (error) ->
+            if error
+                return reject(error)
+            return resolve(infosArray)
+
+sftpMkdir = (sftpClient, remotePath) ->
+    return new Promise (resolve, reject) ->
+        sftpClient.mkdir remotePath, (error) ->
+            if error
+                return reject(error)
+            return resolve()
+
+sftpRmdir = (sftpClient, remotePath) ->
+    return new Promise (resolve, reject) ->
+        sftpClient.rmdir remotePath, (error) ->
+            if error
+                return reject(error)
+            return resolve()
+
+RemoteFs.create = (options, rootPath) ->
+    return coroutine () ->
+        ins = new RemoteFs()
+        ins.rootPath = path.normalize("#{rootPath}/")
+        # create ssh link
+        ins._sshClient = yield createSshLink(options)
+        # create sftp link
+        ins._sftpClient = yield createSftpLink(ins._sshClient)
+        # scan root dir
         parentStack = ["", ins.rootPath]
-        travelDir = (resolve, reject) ->
+        while parentStack.lenght > 0
             parent = parentStack.shift()
             remoteParent = parentStack.shift()
             console.log("L:#{parent}\nR:#{remoteParent}\n")
-            ins._sftpClient.readdir remoteParent, (error, infosArray) ->
-                if error
-                    return reject(error)
-                ins._dirsMap[parent] = new DirInfo(parent, remoteParent, infosArray.length)
-                for info in infosArray
-                    remoteChild = path.normalize("#{ins.rootPath}/#{parent}/#{info.filename}")
-                    child = remoteChild[ins.rootPath.length...]
-                    if "d" == info.longname[0]
-                        parentStack.push(child, remoteChild)
-                    else
-                        ins._filesMap[child] = new FileInfo(child, remoteChild, info.attrs.mtime)
-                if 0 != parentStack.length
-                    return resolve(new Promise(travelDir))
+            infosArray = yield sftpReaddir sftpClient, remoteParent
+            ins._dirsMap[parent] = new DirInfo(parent, remoteParent, infosArray.length)
+            for info in infosArray
+                remoteChild = path.normalize("#{ins.rootPath}/#{parent}/#{info.filename}")
+                child = remoteChild[ins.rootPath.length...]
+                if "d" == info.longname[0]
+                    parentStack.push(child, remoteChild)
                 else
-                    return resolve()
-        return new Promise(travelDir)
+                    ins._filesMap[child] = new FileInfo(child, remoteChild, info.attrs.mtime)
     .then () ->
         return ins
     .catch (error) ->
