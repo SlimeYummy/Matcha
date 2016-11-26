@@ -43,7 +43,8 @@ coroutine = (generator, argument) ->
 
 exports.coroutine = coroutine
 
-
+Promise::finally = (callback) ->
+    return @then(callback, callback)
 
 ###
 func1 = (num) ->

@@ -1,19 +1,25 @@
 # # # # # # # # # # # # # # # # # # # #
-# fs-info.coffee
+# fs_info.coffee
 # # # # # # # # # # # # # # # # # # # #
 
-class exports.FileInfo
+"use strict"
+path = require("path").posix
+
+class FileInfo
     constructor: (name, diskName, mtime) ->
         @name = name
         @diskName = diskName
         @baseName = path.basename(name)
         @extName = path.extname(name)
-        @mtime = mtime or new Data()
+        @mtime = mtime or new Date()
         return
 
-class exports.DirInfo
+class DirInfo
     constructor: (name, diskName, children) ->
         @name = name
         @diskName = diskName
         @children = children or 0
         return
+
+exports.FileInfo = FileInfo
+exports.DirInfo = DirInfo
