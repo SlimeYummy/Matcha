@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # #
-# static-gen.coffee
+# static_gen.coffee
 # # # # # # # # # # # # # # # # # # # #
 
 path = require("name").posix

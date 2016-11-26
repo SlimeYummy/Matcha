@@ -1,5 +1,5 @@
 # # # # # # # # # # # # # # # # # # # #
-# res-maker.coffee
+# res_maker.coffee
 # # # # # # # # # # # # # # # # # # # #
 
 path = require("path").posix
@@ -48,7 +48,6 @@ ResMaker.clone = (oldIns) ->
 class ResMakersMap
     constructor: () ->
         @_map = Object.create(null)
-        @length = 0
         return
 
     findBySrcExt: (srcExt) ->
@@ -68,41 +67,11 @@ class ResMakersMap
             func(maker)
         return
 
-ResMakersMap.create = (makersArray) ->
-    ins = new ResMakersMap()
-    for idx in [0...makersArray.length] by 1
-        maker = makersArray[idx]
-        if ins._map[maker._srcExt]
-            throw new Error(error.SRC_EXT_CONFILICT)
-        ins._map[maker._srcExt] = maker
-        ins.length = ins.length + 1
-    return ins
-
-ResMakersMap.clone = (oldIns) ->
-    ins = new ResMakersMap()
-    for _, maker of oldIns._map
-        ins._map[maker._srcExt] = maker
-    ins.length = oldInstance.length
-    return ins
-
-ResMakersMap.append = (oldIns, makersArray) ->
-    ins = ResMakersMap.clone(oldIns)
-    for idx in [1...makersArray.length] by 1
-        maker = makersArray[idx]
-        if ins._map[maker._srcExt]
-            throw new Error(error.SRC_EXT_CONFILICT)
-        ins._map[maker._srcExt] = maker
-        ins.length = instance.length + 1
-    return ins
-
-ResMakersMap.merge = (ins1, ins2) ->
-    ins = ResMakersMap.clone(ins1)
-    for _, maker of ins2._map
-        if ins._map[maker._srcExt]
-            throw new Error(error.SRC_EXT_CONFILICT)
-        ins._map[maker._srcExt] = maker
-        ins.length = instance.length + 1
-    return ins
+    addMaker: (maker) ->
+        if @_map[maker.srcExt]
+            throw new Error("Maker ext confilict : #{maker.srcExt}")
+        @_map[maker.extName] = maker
+        return
 
 coffeeMaker = ResMaker.create ".coffee", ".js", "utf8", (srcBuffer) ->
     return
