@@ -17,12 +17,12 @@ class ResMaker
         return
 
     toSrcName: (dstName) ->
-        baseName = path.basename(dstName)
-        return "#{baseName}#{@_srcExt}"
+        nameFrag = dstName[...-@dstExt.length]
+        return "#{nameFrag}#{@srcExt}"
 
     toDstName: (srcName) ->
-        baseName = path.basename(srcName)
-        return "#{baseName}#{@_dstExt}"
+        nameFrag = srcName[...-@srcExt.length]
+        return "#{nameFrag}#{@dstExt}"
 
     compile: (srcBuffer) ->
         compile = @_compile

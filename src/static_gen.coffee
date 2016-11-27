@@ -15,10 +15,10 @@ color = require("./color")
 DEFAULT_ITEM = 10
 DEFAULT_MULTI = false
 
-UNDER_LINE_REGEX = /\/_/
-STATIC_GEN_REGEX = /\.sg^/
-X_STATIC_GEN_REGEX = /\.xsg^/
-TEMPLATE_REGEX = /\.tmpl^/
+UNDER_LINE_REGEX = /(^_)|(\/_)/
+STATIC_GEN_REGEX = /\.sg$/
+X_STATIC_GEN_REGEX = /\.xsg$/
+TEMPLATE_REGEX = /\.tmpl$/
 IGNORE_REGEX = ///
     \.gliffy$
 ///
@@ -33,10 +33,11 @@ readTmplConfig = (virFs, info) ->
                     object[index] = replaceFile(value)
             else
                 for key, value of object
-                    object[key] = replaceFile(value)
+                    object[key] = travel(value)
         else if "string" == typeof object
             if "@" == object[0] and "@" == object[1]
-                realPath = path.normalize("#{sgPath}/#{object}")
+                realPath = "./#{info.url.dir}/#{object[2...]}"
+                realPath = path.normalize(realPath)
                 fileText = virFs.read(realPath, "utf8")
                 return fileText
         return object
@@ -44,17 +45,17 @@ readTmplConfig = (virFs, info) ->
 
 buildTmplSg = (tmplMap, config) ->
     # read template
-    tmplText = tmplMap[config.TEMPLATE]
-    if not tmplText
-        throw new Error("Template not found : #{config.TMPL}")
+    tmplFunc = tmplMap[config.TEMPLATE]
+    if "function" != typeof tmplFunc
+        throw new Error("Template not found : #{config.TEMPLATE}")
     # compile template
-    return template.render(tmplText, config)
+    return tmplFunc(config)
 
 buildTmplXsg = (tmplMap, metasArray, config) ->
     # read template
-    tmplText = tmplMap[config.TEMPLATE]
-    if not tmplText
-        throw new Error("Template not found : #{config.TMPL}")
+    tmplFunc = tmplMap[config.TEMPLATE]
+    if "function" != typeof tmplFunc
+        throw new Error("Template not found : #{config.TEMPLATE}")
     # filter metas
     metasArray = metasArray.filter (meta) ->
         if not meta.type
@@ -67,12 +68,12 @@ buildTmplXsg = (tmplMap, metasArray, config) ->
     if not multi
         config.ITEM.pageIndex = 1
         config.ITEM.metasArray = metasArray[0...item]
-        return template.render(tmplText, config)
+        return tmplFunc(config)
     else
         for idx in [0...metasArray.length] by item
             config.ITEM.pageIndex = idx + 1
             config.ITEM.metasArray = metasArray[idx...item]
-            htmlText = template.render(tmplText, config)
+            htmlText = tmplFunc(config)
             tmplsArray.push(htmlText)
         return tmplsArray
 
@@ -109,7 +110,7 @@ staticGen = (rootPath) ->
                 infosArray.push(srcInfo)
                 continue
             # need update ?
-            tmpName = "#{srcInfo.url.dir}/#{srcInfo.url.name}#{maker.dstExt}"
+            tmpName = maker.toDstName(srcInfo.name)
             tmpInfo = tmpFs.filesMap[tmpName]
             if tmpInfo and srcInfo.mtime < tmpInfo.mtime
                 infosArray.push(tmpInfo)
@@ -135,7 +136,9 @@ staticGen = (rootPath) ->
             if IGNORE_REGEX.test(tmpInfo.name)
                 tmpFs.delete(tmpInfo.name)
                 color.green("Delete OK : #{tmpInfo.name}")
-            else if tmpInfo != virFs.filesMap[tmpInfo.name]
+                continue
+            virInfo = virFs.filesMap[tmpInfo.name]
+            if not virInfo or tmpInfo.mtime < virInfo.mtime
                 tmpFs.delete(tmpInfo.name)
                 color.green("Delete OK : #{tmpInfo.name}")
         catch error
@@ -148,12 +151,30 @@ staticGen = (rootPath) ->
         try
             if UNDER_LINE_REGEX.test(virInfo.name)
                 continue
-            else
-                copyBuffer = virFs.read(virInfo.name)
-                rlsFs.write(virInfo.name, copyBuffer)
-                color.green("Copy OK : #{virInfo.name}")
+            rlsInfo = rlsFs.filesMap[virInfo.name]
+            if rlsInfo and virInfo.mtime < rlsInfo.mtime
+                continue
+            copyBuffer = virFs.read(virInfo.name)
+            rlsFs.write(virInfo.name, copyBuffer)
+            color.green("Copy OK : #{virInfo.name}")
         catch error
             color.yellow("Copy ERR : #{virInfo.name}")
+            color.yellow(error.stack)
+
+    # delete resource
+    color.white("\nClear reource in #{rootPath}/rls/")
+    for _, rlsInfo of rlsFs.filesMap
+        try
+            if IGNORE_REGEX.test(rlsInfo.name)
+                rlsFs.delete(rlsInfo.name)
+                color.green("Delete OK : #{rlsInfo.name}")
+                continue
+            virInfo = virFs.filesMap[rlsInfo.name]
+            if not virInfo or rlsInfo.mtime < virInfo.mtime
+                rlsFs.delete(rlsInfo.name)
+                color.green("Delete OK : #{rlsInfo.name}")
+        catch error
+            color.yellow("Delete ERR : #{rlsInfo.name}")
             color.yellow(error.stack)
 
     # build template
@@ -165,14 +186,16 @@ staticGen = (rootPath) ->
         try
             if STATIC_GEN_REGEX.test(virInfo.name)
                 sgInfosArray.push(virInfo)
-            else if X_STATIC_GEN_REGEX.text(virInfo.name)
+            else if X_STATIC_GEN_REGEX.test(virInfo.name)
                 xsgInfosArray.push(virInfo)
             else if TEMPLATE_REGEX.test(virInfo.name)
                 tmplText = virFs.read(virInfo.name, "utf8")
-                tmplsMap[virInfo.name] = tmplText
+                tmplFunc = art.compile(tmplText)
+                tmplsMap[virInfo.name] = tmplFunc
         catch error
             color.yellow("Build ERR : #{virInfo.name}")
             color.yellow(error.stack)
+
     # build .sg file
     sgConfigArray = []
     for sgInfo in sgInfosArray
@@ -180,10 +203,12 @@ staticGen = (rootPath) ->
             sgConfig = readTmplConfig(virFs, sgInfo)
             sgConfigArray.push(sgConfig)
             tmplBuffer = buildTmplSg(tmplsMap, sgConfig)
-            rls.write(virInfo.name, tmplBuffer)
+            rlsFs.write(sgInfo.name, tmplBuffer)
         catch error
             color.yellow("Build ERR : #{virInfo.name}")
             color.yellow(error.stack)
+
+    return
     # build .xsg file
     for xsgInfo in xsgInfosArray
         try
