@@ -9,8 +9,7 @@ class FileInfo
     constructor: (name, diskName, mtime) ->
         @name = name
         @diskName = diskName
-        @baseName = path.basename(name)
-        @extName = path.extname(name)
+        @url = path.parse(name)
         @mtime = mtime or new Date()
         return
 

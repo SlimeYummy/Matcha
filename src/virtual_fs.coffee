@@ -26,9 +26,11 @@ class VirtualFs
 VirtualFs.create = (infosArray) ->
     filesMap = Object.create(null)
     for info in infosArray
-        if not filesMap[info.name]
+        if filesMap[info.name]
             throw new Error("File name confilict: #{info.name}")
         filesMap[info.name] = info
     ins = new VirtualFs()
     ins.filesMap = filesMap
     return ins
+
+module.exports = VirtualFs

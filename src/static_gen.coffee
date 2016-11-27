@@ -2,10 +2,13 @@
 # static_gen.coffee
 # # # # # # # # # # # # # # # # # # # #
 
-path = require("name").posix
+"use strict"
 art = require("art-template")
-{MappingFileSystem, VirtualFileSystem} = require("./file-system")
-{ResMakersMap, innerMakers} = require("./res-maker")
+cson = require("cson")
+{coroutine} = require("./async_util")
+LocalFs = require("./local_fs")
+VirtualFs = require("./virtual_fs")
+{makersMap} = require("./res_maker")
 color = require("./color")
 
 buildTemplate = (virFs, rootPath, json) ->
@@ -28,40 +31,80 @@ buildTemplate = (virFs, rootPath, json) ->
     color.green("Template : #{rootPath}/_.json")
     return
 
-func = () ->
-    srcFs = LocalFileSystem.create("#{rootPath}/src/")
-    tmpFs = LocalFileSystem.create("#{rootPath}/tmp/")
-    rlsFs = LocalFileSystem.create("#{rootPath}/rls/")
+UNDER_LINE_REGEX = /\/_/
+STATIC_GEN_REGEX = /\.sg^/
+IGNORE_REGEX = ///
+    \.gliffy$
+///
+
+staticGen = (rootPath) ->
+    try
+        srcFs = LocalFs.create("#{rootPath}/src/")
+    catch error
+        color.red(error.stack)
+        return
+
+    try
+        tmpFs = LocalFs.create("#{rootPath}/tmp/")
+    catch error
+        color.red(error.stack)
+        return
+
+    try
+        rlsFs = LocalFs.create("#{rootPath}/rls/")
+    catch error
+        color.red(error.stack)
+        return
 
     # update resource
     infosArray = []
-    srcFs.forEach (srcInfo) ->
-        # need compile ?
-        maker = innerMakers.findBySrcExt(srcInfo.extName)
-        if not maker
-            return srcInfo
-        # need update ?
-        tmpName = "#{srcInfo.baseName}#{maker.extName}"
-        tmpInfo = tmpFs.find(tmpName)
-        if tmpInfo and srcInfo.mtime < tmpInfo.mtime
-            return tmpInfo
-        # compile resource
-        srcBuffer = srcFs.read(srcInfo.name)
-        tmpBuffer = maker.compile(srcBuffer)
-        tmpFs.write(tmpInfo, tmpBuffer)
-        # compile OK
-        color.green("Compile : #{srcInfo.name}")
-        infosArray.push(tmpInfo)
+    for _, srcInfo of srcFs.filesMap
+        try
+            # ignore ?
+            if IGNORE_REGEX.test(srcInfo.name)
+                continue
+            # need compile ?
+            maker = makersMap.findBySrcExt(srcInfo.url.ext)
+            if not maker
+                infosArray.push(srcInfo)
+                continue
+            # need update ?
+            tmpName = "#{srcInfo.url.dir}/#{srcInfo.url.name}#{maker.dstExt}"
+            tmpInfo = tmpFs.filesMap[tmpName]
+            if tmpInfo and srcInfo.mtime < tmpInfo.mtime
+                infosArray.push(tmpInfo)
+                continue
+            # compile resource
+            srcBuffer = srcFs.read(srcInfo.name, maker.encoding)
+            tmpBuffer = maker.compile(srcBuffer)
+            tmpFs.write(tmpName, tmpBuffer)
+            tmpInfo = tmpFs.filesMap[tmpName]
+            infosArray.push(tmpInfo)
+            # print info
+            color.green("Compile OK : #{srcInfo.name}")
+        catch error
+            color.yellow("Compile ERR : #{srcInfo.name}")
+            color.yellow(error.stack)
+
+    virFs = VirtualFs.create(infosArray)
 
     # delete resource
-    virFs = VirtualFileSystem.create(infosArray)
-    tmpFs.forEach (tmpInfo) ->
-        virInfo = virFs.find(tmpInfo.name)
-        if virInfo != tmpInfo
-            tmpFs.remove(tmpInfo.name)
-            color.green("Remove : #{srcInfo.name}")
+    for _, tmpInfo of tmpFs.filesMap
+        try
+            if IGNORE_REGEX.test(tmpInfo.name)
+                tmpFs.delete(tmpInfo.name)
+                color.green("Delete OK : #{tmpInfo.name}")
+            else if tmpInfo != virFs.filesMap[tmpInfo.name]
+                tmpFs.delete(tmpInfo.name)
+                color.green("Delete OK : #{tmpInfo.name}")
+        catch error
+            color.yellow("Delete ERR : #{tmpInfo.name}")
+            color.yellow(error.stack)
 
-    #
+    for key, value of virFs.filesMap
+        console.log key
+
+    ###
     virFs.forEach (virInfo) ->
         if "_.json" == virInfo.name[-6...]
             buffer = virFs.readFile(virInfo.name, "utf8")
@@ -83,4 +126,7 @@ func = () ->
             virInfo = virFs.findFileInfo(rlsInfo.name)
             if not virInfo
                 rlsFs.removeFile(rlsInfo.name)
+    ###
     return
+
+staticGen("../WebSite/")

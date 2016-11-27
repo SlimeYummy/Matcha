@@ -18,8 +18,9 @@
   "homepage": "https://github.com/NaNuNoo/Matcha#readme",
   "dependencies": {
       "art-template": ">=3.0.3",
-      "coffee-script": ">=1.11.1",
+      "markdown-it": ">=8.1.0",
       "less": ">=2.7.1",
-      "markdown-it": ">=8.1.0"
+      "coffee-script": ">=1.11.1",
+      "cson": ">=4.0.0"
   }
 }

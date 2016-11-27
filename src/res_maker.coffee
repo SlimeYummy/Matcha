@@ -3,9 +3,10 @@
 # # # # # # # # # # # # # # # # # # # #
 
 path = require("path").posix
-coffee = require("coffeescript")
-markdown = require("markdown-it")
-error = require("./error")
+markdown = require("markdown-it")()
+less = require("less")
+coffee = require("coffee-script")
+cson = require("cson")
 
 class ResMaker
     constructor: () ->
@@ -70,29 +71,41 @@ class ResMakersMap
     addMaker: (maker) ->
         if @_map[maker.srcExt]
             throw new Error("Maker ext confilict : #{maker.srcExt}")
-        @_map[maker.extName] = maker
+        @_map[maker.srcExt] = maker
         return
 
-coffeeMaker = ResMaker.create ".coffee", ".js", "utf8", (srcBuffer) ->
-    return
+    removeMaker: (srxExt) ->
+        if @_map[srxExt]
+            delete @_map[srxExt]
+        return
 
-stylusMaker = ResMaker.create ".styl", ".css", "utf8", (srcBuffer) ->
-    return
+makersMap = new ResMakersMap()
 
 markdownMaker = ResMaker.create ".md", ".txt", "utf8", (srcBuffer) ->
-    return
+    dstBuffer = markdown.render(srcBuffer)
+    return dstBuffer
+makersMap.addMaker(markdownMaker)
+
+lessMaker = ResMaker.create ".less", ".css", "utf8", (srcBuffer) ->
+    less.render srcBuffer, (error, output) ->
+        throw error if error
+        dstBuffer = output
+    return dstBuffer
+makersMap.addMaker(lessMaker)
+
+coffeeMaker = ResMaker.create ".coffee", ".js", "utf8", (srcBuffer) ->
+    dstBuffer = coffee.compile(srcBuffer)
+    return dstBuffer
+makersMap.addMaker(coffeeMaker)
 
 csonMaker = ResMaker.create ".cson", ".json", "utf8", (srcBuffer) ->
-    return
-
-innerMakers = ResMakersMap.create([
-    coffeeMaker,
-    stylusMaker,
-    markdownMaker,
-    csonMaker
-])
+    csonObj = cson.parse(srcBuffer)
+    if csonObj instanceof Error
+        throw error
+    desBuffer = JSON.stringify(csonObj)
+    return dstBuffer
+makersMap.addMaker(csonMaker)
 
 
 exports.ResMaker = ResMaker
-exports.ResMakersMap = ResMakersMap
-exports.innerMakers = innerMakers
+exports.makersMap = makersMap

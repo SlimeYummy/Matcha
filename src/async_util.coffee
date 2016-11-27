@@ -2,6 +2,8 @@
 # async_util.coffee
 # # # # # # # # # # # # # # # # # # # #
 
+"use strict"
+
 coroutine = (generator, argument) ->
     if "function" != typeof generator
         throw new Error("Type Error: Not A Generator.")
