@@ -3,6 +3,7 @@
 # # # # # # # # # # # # # # # # # # # #
 
 "use strict"
+fs = require("fs")
 {FileInfo, DirInfo} = require("./fs_info.coffee")
 
 

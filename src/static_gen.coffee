@@ -3,6 +3,7 @@
 # # # # # # # # # # # # # # # # # # # #
 
 "use strict"
+path = require("path").posix
 art = require("art-template")
 cson = require("cson")
 {coroutine} = require("./async_util")
@@ -11,31 +12,69 @@ VirtualFs = require("./virtual_fs")
 {makersMap} = require("./res_maker")
 color = require("./color")
 
-buildTemplate = (virFs, rootPath, json) ->
-    tmplArgs = {
-        files: {}
-    }
-    for key, val of json
-        if "@" != key[0]
-            tmplArgs[key] = val
-        else
-            if "@FILES" == key
-                tmplArgs.files[key] = virFs.read("#{rootPath}/#{val}", "utf8")
-    tmplText = virFs.read(json["@CONFIG"].template, "utf8")
-    if "article" == json["@CONFIG"].type
-        return art.render(tmplText, tmplArgs)
-    else if "index" == json["@CONFIG"].type
-        #for idx in [0...]
-    else
-        throw new Error("Invaild type.")
-    color.green("Template : #{rootPath}/_.json")
-    return
+DEFAULT_ITEM = 10
+DEFAULT_MULTI = false
 
 UNDER_LINE_REGEX = /\/_/
 STATIC_GEN_REGEX = /\.sg^/
+X_STATIC_GEN_REGEX = /\.xsg^/
+TEMPLATE_REGEX = /\.tmpl^/
 IGNORE_REGEX = ///
     \.gliffy$
 ///
+
+readTmplConfig = (virFs, info) ->
+    text = virFs.read(info.name, "utf8")
+    config = cson.parse(text)
+    travel = (object) ->
+        if "object" == typeof object
+            if Array.isArray(object)
+                for value, index in object
+                    object[index] = replaceFile(value)
+            else
+                for key, value of object
+                    object[key] = replaceFile(value)
+        else if "string" == typeof object
+            if "@" == object[0] and "@" == object[1]
+                realPath = path.normalize("#{sgPath}/#{object}")
+                fileText = virFs.read(realPath, "utf8")
+                return fileText
+        return object
+    return travel(config)
+
+buildTmplSg = (tmplMap, config) ->
+    # read template
+    tmplText = tmplMap[config.TEMPLATE]
+    if not tmplText
+        throw new Error("Template not found : #{config.TMPL}")
+    # compile template
+    return template.render(tmplText, config)
+
+buildTmplXsg = (tmplMap, metasArray, config) ->
+    # read template
+    tmplText = tmplMap[config.TEMPLATE]
+    if not tmplText
+        throw new Error("Template not found : #{config.TMPL}")
+    # filter metas
+    metasArray = metasArray.filter (meta) ->
+        if not meta.type
+            return true
+        return type == config.CATALOG.type
+    # compile template
+    item = config.CATALOG.item or DEFAULT_ITEM
+    multi = config.CATALOG.multi or DEFAULT_MULTI
+    config.ITEM = {}
+    if not multi
+        config.ITEM.pageIndex = 1
+        config.ITEM.metasArray = metasArray[0...item]
+        return template.render(tmplText, config)
+    else
+        for idx in [0...metasArray.length] by item
+            config.ITEM.pageIndex = idx + 1
+            config.ITEM.metasArray = metasArray[idx...item]
+            htmlText = template.render(tmplText, config)
+            tmplsArray.push(htmlText)
+        return tmplsArray
 
 staticGen = (rootPath) ->
     try
@@ -56,7 +95,8 @@ staticGen = (rootPath) ->
         color.red(error.stack)
         return
 
-    # update resource
+    # compile resource
+    color.white("\nCompile reource in #{rootPath}/src/")
     infosArray = []
     for _, srcInfo of srcFs.filesMap
         try
@@ -89,6 +129,7 @@ staticGen = (rootPath) ->
     virFs = VirtualFs.create(infosArray)
 
     # delete resource
+    color.white("\nClear reource in #{rootPath}/tmp/")
     for _, tmpInfo of tmpFs.filesMap
         try
             if IGNORE_REGEX.test(tmpInfo.name)
@@ -101,32 +142,66 @@ staticGen = (rootPath) ->
             color.yellow("Delete ERR : #{tmpInfo.name}")
             color.yellow(error.stack)
 
-    for key, value of virFs.filesMap
-        console.log key
+    # copy resource
+    color.white("\nCopy reource to #{rootPath}/rls/")
+    for _, virInfo of virFs.filesMap
+        try
+            if UNDER_LINE_REGEX.test(virInfo.name)
+                continue
+            else
+                copyBuffer = virFs.read(virInfo.name)
+                rlsFs.write(virInfo.name, copyBuffer)
+                color.green("Copy OK : #{virInfo.name}")
+        catch error
+            color.yellow("Copy ERR : #{virInfo.name}")
+            color.yellow(error.stack)
 
-    ###
-    virFs.forEach (virInfo) ->
-        if "_.json" == virInfo.name[-6...]
-            buffer = virFs.readFile(virInfo.name, "utf8")
-            json = JSON.parse(buffer)
-            if "object" == typeof(json.file)
-                for key, fileName of json.file
-                    realPath = path.normalize("#{}/#{fileName}")
-                    json.[key] = virFs.readFile(realPath)
-            art.render()
-    virFs.forEachFiles (virInfo) ->
-        breakPos = virInfo.name.indexOf("/")
-        if "_" != virInfo[breakPos-1]
-            rlsInfo = rlsFs.findFileInfo(virInfo.name)
-            if not rlsInfo or rlsInfo.mtime <= virInfo.mtime
-                buffer = virFs.readFile(virInfo.name)
-                rlsFs.writeFile(virInfo.name, buffer)
-    rlsFs.forEachFiles (rlsInfo) ->
-        if "_.html" != rlsInfo.name[-6...] and not virFs.findFileInfo(rlsInfo.name)
-            virInfo = virFs.findFileInfo(rlsInfo.name)
-            if not virInfo
-                rlsFs.removeFile(rlsInfo.name)
-    ###
+    # build template
+    color.white("\nBuild template to #{rootPath}/rls/")
+    sgInfosArray = []
+    xsgInfosArray = []
+    tmplsMap = Object.create(null)
+    for _, virInfo of virFs.filesMap
+        try
+            if STATIC_GEN_REGEX.test(virInfo.name)
+                sgInfosArray.push(virInfo)
+            else if X_STATIC_GEN_REGEX.text(virInfo.name)
+                xsgInfosArray.push(virInfo)
+            else if TEMPLATE_REGEX.test(virInfo.name)
+                tmplText = virFs.read(virInfo.name, "utf8")
+                tmplsMap[virInfo.name] = tmplText
+        catch error
+            color.yellow("Build ERR : #{virInfo.name}")
+            color.yellow(error.stack)
+    # build .sg file
+    sgConfigArray = []
+    for sgInfo in sgInfosArray
+        try
+            sgConfig = readTmplConfig(virFs, sgInfo)
+            sgConfigArray.push(sgConfig)
+            tmplBuffer = buildTmplSg(tmplsMap, sgConfig)
+            rls.write(virInfo.name, tmplBuffer)
+        catch error
+            color.yellow("Build ERR : #{virInfo.name}")
+            color.yellow(error.stack)
+    # build .xsg file
+    for xsgInfo in xsgInfosArray
+        try
+            xsgConfig = readTmplConfig(virFs, sgInfo)
+            result = buildTmplXsg(tmplsMap, xsgConfig)
+            if "string" == typeof result
+                tmplBuffer = result
+                rls.write(virInfo.name, tmplBuffer)
+            else
+                for tmplBuffer, idx in result
+                    name = "#{virInfo.name}_#{idx+1}"
+                    rls.write(name, tmplBuffer)
+        catch error
+            color.yellow("Build ERR : #{virInfo.name}")
+            color.yellow(error.stack)
+
+    # done
+    color.white("Done ! \n\n")
     return
 
-staticGen("../WebSite/")
+staticGen("../WebSite")
