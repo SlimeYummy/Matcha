@@ -56,7 +56,7 @@ buildTmplXsg = (tmplMap, metasArray, config) ->
     tmplFunc = tmplMap[config.TEMPLATE]
     if "function" != typeof tmplFunc
         throw new Error("Template not found : #{config.TEMPLATE}")
-    # filter metas
+    # filter metasArray
     metasArray = metasArray.filter (meta) ->
         if not meta.type
             return true
@@ -64,15 +64,15 @@ buildTmplXsg = (tmplMap, metasArray, config) ->
     # compile template
     item = config.CATALOG.item or DEFAULT_ITEM
     multi = config.CATALOG.multi or DEFAULT_MULTI
-    config.ITEM = {}
+    config.ITEMS = {}
     if not multi
-        config.ITEM.pageIndex = 1
-        config.ITEM.metasArray = metasArray[0...item]
+        config.ITEMS.pageIndex = 1
+        config.ITEMS.metasArray = metasArray[0...item]
         return tmplFunc(config)
     else
         for idx in [0...metasArray.length] by item
-            config.ITEM.pageIndex = idx + 1
-            config.ITEM.metasArray = metasArray[idx...item]
+            config.ITEMS.pageIndex = idx + 1
+            config.ITEMS.metasArray = metasArray[idx...item]
             htmlText = tmplFunc(config)
             tmplsArray.push(htmlText)
         return tmplsArray
@@ -197,30 +197,31 @@ staticGen = (rootPath) ->
             color.yellow(error.stack)
 
     # build .sg file
-    sgConfigArray = []
+    sgMetasArray = []
     for sgInfo in sgInfosArray
         try
             sgConfig = readTmplConfig(virFs, sgInfo)
-            sgConfigArray.push(sgConfig)
+            sgMetasArray.push(sgConfig.META)
             tmplBuffer = buildTmplSg(tmplsMap, sgConfig)
-            rlsFs.write(sgInfo.name, tmplBuffer)
+            outName = path.normalize("#{sgInfo.url.dir}/#{sgConfig.NAME}.html")
+            rlsFs.write(outName, tmplBuffer)
         catch error
             color.yellow("Build ERR : #{virInfo.name}")
             color.yellow(error.stack)
 
-    return
     # build .xsg file
     for xsgInfo in xsgInfosArray
         try
-            xsgConfig = readTmplConfig(virFs, sgInfo)
-            result = buildTmplXsg(tmplsMap, xsgConfig)
+            xsgConfig = readTmplConfig(virFs, xsgInfo)
+            result = buildTmplXsg(tmplsMap, sgMetasArray, xsgConfig)
             if "string" == typeof result
                 tmplBuffer = result
-                rls.write(virInfo.name, tmplBuffer)
+                outName = path.normalize("#{xsgInfo.url.dir}/#{xsgConfig.NAME}.html")
+                rlsFs.write(outName, tmplBuffer)
             else
                 for tmplBuffer, idx in result
-                    name = "#{virInfo.name}_#{idx+1}"
-                    rls.write(name, tmplBuffer)
+                    outName = path.normalize("#{xsgInfo.url.dir}/#{xsgConfig.NAME}_#{idx+1}.html")
+                    rlsFs.write(name, tmplBuffer)
         catch error
             color.yellow("Build ERR : #{virInfo.name}")
             color.yellow(error.stack)
