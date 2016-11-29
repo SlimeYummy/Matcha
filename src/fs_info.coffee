@@ -11,6 +11,7 @@ class FileInfo
         @diskName = diskName
         @url = path.parse(name)
         @mtime = mtime or new Date()
+        @using = false
         return
 
 class DirInfo

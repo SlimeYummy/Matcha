@@ -22,6 +22,8 @@ createSftpLink = (sshClient, options) ->
             return reject(error)
         return resolve(sftpClient)
 
+
+
 sftpUpland = (sftpClient, remotePath, localPath) ->
     return new Promise (resolve, reject) ->
         sftpClient.fastGet remotePath, localPath, (error) ->

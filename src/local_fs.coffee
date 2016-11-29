@@ -24,6 +24,7 @@ class LocalFs
     write: (name, buffer) ->
         fileInfo = @filesMap[name]
         if fileInfo
+            fileInfo.using = true
             return fs.writeFileSync(fileInfo.diskName, buffer)
         # create folder
         prevDirInfo = @dirsMap[""]
@@ -40,6 +41,7 @@ class LocalFs
         # create file
         prevDirInfo.children = prevDirInfo.children + 1
         fileInfo = new FileInfo(name, "#{@rootPath}/#{name}")
+        fileInfo.using = true
         @filesMap[name] = fileInfo
         # write file
         return fs.writeFileSync(fileInfo.diskName, buffer)
@@ -60,6 +62,13 @@ class LocalFs
                 else
                     dirInfo.children = dirInfo.children - 1
                     break
+        return
+
+    touch: (name) ->
+        fileInfo = @filesMap[name]
+        if not fileInfo
+            throw new Error("File not found: #{name}")
+        fileInfo.using = true
         return
 
 LocalFs.create = (rootPath) ->

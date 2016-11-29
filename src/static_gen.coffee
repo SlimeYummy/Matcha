@@ -77,6 +77,9 @@ buildTmplXsg = (tmplMap, metasArray, config) ->
             tmplsArray.push(htmlText)
         return tmplsArray
 
+convertTmplName = (dir, name) ->
+
+
 staticGen = (rootPath) ->
     try
         srcFs = LocalFs.create("#{rootPath}/src/")
@@ -113,6 +116,7 @@ staticGen = (rootPath) ->
             tmpName = maker.toDstName(srcInfo.name)
             tmpInfo = tmpFs.filesMap[tmpName]
             if tmpInfo and srcInfo.mtime < tmpInfo.mtime
+                tmpFs.touch(tmpName)
                 infosArray.push(tmpInfo)
                 continue
             # compile resource
@@ -121,7 +125,6 @@ staticGen = (rootPath) ->
             tmpFs.write(tmpName, tmpBuffer)
             tmpInfo = tmpFs.filesMap[tmpName]
             infosArray.push(tmpInfo)
-            # print info
             color.green("Compile OK : #{srcInfo.name}")
         catch error
             color.yellow("Compile ERR : #{srcInfo.name}")
@@ -131,18 +134,16 @@ staticGen = (rootPath) ->
 
     # delete resource
     color.white("\nClear reource in #{rootPath}/tmp/")
+    tmpDeleteArray = []
     for _, tmpInfo of tmpFs.filesMap
+        if tmpInfo.using
+            tmpDeleteArray.push(tmpInfo.name)
+    for tmpName of tmpDeleteArray
         try
-            if IGNORE_REGEX.test(tmpInfo.name)
-                tmpFs.delete(tmpInfo.name)
-                color.green("Delete OK : #{tmpInfo.name}")
-                continue
-            virInfo = virFs.filesMap[tmpInfo.name]
-            if not virInfo or tmpInfo.mtime < virInfo.mtime
-                tmpFs.delete(tmpInfo.name)
-                color.green("Delete OK : #{tmpInfo.name}")
+            tmpFs.delete(tmpName)
+            color.green("Delete OK : #{tmpName}")
         catch error
-            color.yellow("Delete ERR : #{tmpInfo.name}")
+            color.yellow("Delete ERR : #{tmpName}")
             color.yellow(error.stack)
 
     # copy resource
@@ -153,28 +154,13 @@ staticGen = (rootPath) ->
                 continue
             rlsInfo = rlsFs.filesMap[virInfo.name]
             if rlsInfo and virInfo.mtime < rlsInfo.mtime
+                rlsFs.touch(rlsInfo.name)
                 continue
             copyBuffer = virFs.read(virInfo.name)
             rlsFs.write(virInfo.name, copyBuffer)
             color.green("Copy OK : #{virInfo.name}")
         catch error
             color.yellow("Copy ERR : #{virInfo.name}")
-            color.yellow(error.stack)
-
-    # delete resource
-    color.white("\nClear reource in #{rootPath}/rls/")
-    for _, rlsInfo of rlsFs.filesMap
-        try
-            if IGNORE_REGEX.test(rlsInfo.name)
-                rlsFs.delete(rlsInfo.name)
-                color.green("Delete OK : #{rlsInfo.name}")
-                continue
-            virInfo = virFs.filesMap[rlsInfo.name]
-            if not virInfo or rlsInfo.mtime < virInfo.mtime
-                rlsFs.delete(rlsInfo.name)
-                color.green("Delete OK : #{rlsInfo.name}")
-        catch error
-            color.yellow("Delete ERR : #{rlsInfo.name}")
             color.yellow(error.stack)
 
     # build template
@@ -224,6 +210,20 @@ staticGen = (rootPath) ->
                     rlsFs.write(name, tmplBuffer)
         catch error
             color.yellow("Build ERR : #{virInfo.name}")
+            color.yellow(error.stack)
+
+    # delete resource
+    color.white("\nClear reource in #{rootPath}/rls/")
+    rlsDeleteArray = []
+    for _, rlsInfo of rlsFs.filesMap
+        if rlsInfo.using
+            rlsDeleteArray.push(rlsInfo.name)
+    for rlsName in rlsDeleteArray
+        try
+            rlsFs.delete(rlsName)
+            color.green("Delete OK : #{rlsInfo.name}")
+        catch error
+            color.yellow("Delete ERR : #{rlsInfo.name}")
             color.yellow(error.stack)
 
     # done
