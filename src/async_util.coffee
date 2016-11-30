@@ -26,6 +26,7 @@ coroutine = (generator, argument) ->
             try
                 genResult = pointer.throw(error)
             catch error
+                console.log(error)
                 return reject(error)
             callNext(genResult)
             return
