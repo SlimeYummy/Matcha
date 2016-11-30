@@ -6,42 +6,23 @@ assert= require("assert")
 fs = require("fs")
 cp = require("child_process")
 mocha = require("mocha")
+util = require("./test_util.coffee")
 LocalFs = require("../src/local_fs.coffee")
 
-mapToArray = (map) ->
-    array = []
-    for key, value of map
-        array.push(value)
-    array.sort (a, b) ->
-        return a.name > b.name
-    return array
-
-shouldThrowError = () ->
-    return new Error("Should throw error.")
-
-clearRoot = (callback) ->
-    if not fs.existsSync("root")
-        setImmediate callback
-    else
-        cp.exec "rd/S/Q .\\root", (error, stdout, stderr) ->
-            throw error if error
-            setImmediate callback
-    return
-
 describe "LocalFs.create()", () ->
-    before clearRoot
-    afterEach clearRoot
+    before util.clearRoot
+    afterEach util.clearRoot
 
     it "Empty folder", (done) ->
         fs.mkdirSync("root")
         localFs = LocalFs.create("root")
         assert(null != localFs)
 
-        dirsArray = mapToArray(localFs.dirsMap)
+        dirsArray = util.mapToArray(localFs.dirsMap)
         assert(1 == dirsArray.length)
         assert("" == dirsArray[0].name && 0 == dirsArray[0].children)
 
-        filesArray = mapToArray(localFs.filesMap)
+        filesArray = util.mapToArray(localFs.filesMap)
         assert(0 == filesArray.length)
 
         done()
@@ -54,7 +35,7 @@ describe "LocalFs.create()", () ->
         localFs = LocalFs.create("root")
         assert(null != localFs)
 
-        dirsArray = mapToArray(localFs.dirsMap)
+        dirsArray = util.mapToArray(localFs.dirsMap)
         assert(3 == dirsArray.length)
 
         assert("" == dirsArray[0].name)
@@ -69,7 +50,7 @@ describe "LocalFs.create()", () ->
         assert("root/folder-2" == dirsArray[2].diskName)
         assert(0 == dirsArray[2].children)
 
-        filesArray = mapToArray(localFs.filesMap)
+        filesArray = util.mapToArray(localFs.filesMap)
         assert(0 == filesArray.length)
 
         done()
@@ -82,13 +63,13 @@ describe "LocalFs.create()", () ->
         localFs = LocalFs.create("root")
         assert(null != localFs)
 
-        dirsArray = mapToArray(localFs.dirsMap)
+        dirsArray = util.mapToArray(localFs.dirsMap)
         assert(1 == dirsArray.length)
         assert("" == dirsArray[0].name)
         assert("root" == dirsArray[0].diskName)
         assert(2 == dirsArray[0].children)
 
-        filesArray = mapToArray(localFs.filesMap)
+        filesArray = util.mapToArray(localFs.filesMap)
         assert(2 == filesArray.length)
 
         assert("file-1" == filesArray[0].name)
@@ -109,7 +90,7 @@ describe "LocalFs.create()", () ->
         localFs = LocalFs.create("root")
         assert(null != localFs)
 
-        dirsArray = mapToArray(localFs.dirsMap)
+        dirsArray = util.mapToArray(localFs.dirsMap)
         assert(3 == dirsArray.length)
 
         assert("" == dirsArray[0].name)
@@ -124,7 +105,7 @@ describe "LocalFs.create()", () ->
         assert("root/folder-2" == dirsArray[2].diskName)
         assert(0 == dirsArray[2].children)
 
-        filesArray = mapToArray(localFs.filesMap)
+        filesArray = util.mapToArray(localFs.filesMap)
         assert(2 == filesArray.length)
 
         assert("file-2" == filesArray[0].name)
@@ -136,8 +117,8 @@ describe "LocalFs.create()", () ->
         done()
 
 describe "LocalFs::read()", () ->
-    before clearRoot
-    afterEach clearRoot
+    before util.clearRoot
+    afterEach util.clearRoot
 
     it "Read exist file", (done) ->
         writeContent = "The content in the file."
@@ -161,11 +142,11 @@ describe "LocalFs::read()", () ->
             readContent =  localFs.read("file-x")
         catch error
             done()
-        throw shouldThrowError()
+        throw util.shouldThrowError()
 
 describe "LocalFs::write()", () ->
-    before clearRoot
-    afterEach clearRoot
+    before util.clearRoot
+    afterEach util.clearRoot
 
     it "Nonexist File", (done) ->
         fs.mkdirSync("root")
@@ -174,11 +155,11 @@ describe "LocalFs::write()", () ->
         writeContent = "The content in the file."
         localFs.write("file", writeContent)
 
-        dirsArray = mapToArray(localFs.dirsMap)
+        dirsArray = util.mapToArray(localFs.dirsMap)
         assert(1 == dirsArray.length)
         assert(1 == dirsArray[0].children)
 
-        filesArray = mapToArray(localFs.filesMap)
+        filesArray = util.mapToArray(localFs.filesMap)
         assert(1 == filesArray.length)
         assert("file" == filesArray[0].name)
         assert("root/file" == filesArray[0].diskName)
@@ -196,11 +177,11 @@ describe "LocalFs::write()", () ->
         writeContent = "The content in the file."
         localFs.write("file", writeContent)
 
-        dirsArray = mapToArray(localFs.dirsMap)
+        dirsArray = util.mapToArray(localFs.dirsMap)
         assert(1 == dirsArray.length)
         assert(1 == dirsArray[0].children)
 
-        filesArray = mapToArray(localFs.filesMap)
+        filesArray = util.mapToArray(localFs.filesMap)
         assert(1 == filesArray.length)
         assert("file" == filesArray[0].name)
         assert("root/file" == filesArray[0].diskName)
@@ -218,7 +199,7 @@ describe "LocalFs::write()", () ->
         writeContent = "The content in the file."
         localFs.write("folder-1/folder-2/file", writeContent)
 
-        dirsArray = mapToArray(localFs.dirsMap)
+        dirsArray = util.mapToArray(localFs.dirsMap)
         assert(3 == dirsArray.length)
 
         assert("" == dirsArray[0].name)
@@ -233,7 +214,7 @@ describe "LocalFs::write()", () ->
         assert("root/folder-1/folder-2" == dirsArray[2].diskName)
         assert(1 == dirsArray[2].children)
 
-        filesArray = mapToArray(localFs.filesMap)
+        filesArray = util.mapToArray(localFs.filesMap)
         assert(1 == filesArray.length)
         assert("folder-1/folder-2/file" == filesArray[0].name)
         assert("root/folder-1/folder-2/file" == filesArray[0].diskName)
@@ -246,8 +227,8 @@ describe "LocalFs::write()", () ->
         done()
 
 describe "LocalFs::delete", () ->
-    before clearRoot
-    afterEach clearRoot
+    before util.clearRoot
+    afterEach util.clearRoot
 
     it "Folder and file", (done) ->
         fs.mkdirSync("root")
@@ -259,7 +240,7 @@ describe "LocalFs::delete", () ->
         localFs = LocalFs.create("root")
         localFs.delete("folder-1/folder-2/file")
 
-        dirsArray = mapToArray(localFs.dirsMap)
+        dirsArray = util.mapToArray(localFs.dirsMap)
         assert(2 == dirsArray.length)
         assert(1 == dirsArray[0].children)
 
@@ -267,7 +248,7 @@ describe "LocalFs::delete", () ->
         assert("root/folder-1" == dirsArray[1].diskName)
         assert(1 == dirsArray[1].children)
 
-        filesArray = mapToArray(localFs.filesMap)
+        filesArray = util.mapToArray(localFs.filesMap)
         assert(1 == filesArray.length)
         assert("folder-1/file-x" == filesArray[0].name)
         assert("root/folder-1/file-x" == filesArray[0].diskName)
@@ -279,4 +260,4 @@ describe "LocalFs::delete", () ->
             readContent =  localFs.delete("file-x")
         catch error
             done()
-        throw shouldThrowError()
+        throw util.shouldThrowError()

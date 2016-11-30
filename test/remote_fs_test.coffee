@@ -6,18 +6,8 @@ assert= require("assert")
 fs = require("fs")
 cp = require("child_process")
 mocha = require("mocha")
+util = require("./test_util.coffee")
 RemoteFs = require("../src/remote_fs.coffee")
-
-mapToArray = (map) ->
-    array = []
-    for key, value of map
-        array.push(value)
-    array.sort (a, b) ->
-        return a.name > b.name
-    return array
-
-shouldThrowError = () ->
-    return new Error("Should throw error.")
 
 describe "LocalFs.create()", (done) ->
     return coroutine () ->
@@ -29,7 +19,7 @@ describe "LocalFs.create()", (done) ->
         }, "ssh_test/create/")
         assert(null != remoteFs)
 
-        dirsArray = mapToArray(remoteFs.dirsMap)
+        dirsArray = util.mapToArray(remoteFs.dirsMap)
         assert(3 == dirsArray.length)
 
         assert("" == dirsArray[0].name)
@@ -44,7 +34,7 @@ describe "LocalFs.create()", (done) ->
         assert("ssh_test/create/folder-2" == dirsArray[2].diskName)
         assert(0 == dirsArray[2]children)
 
-        filesArray = mapToArray(remoteFs.filesMap)
+        filesArray = util.mapToArray(remoteFs.filesMap)
         assert(3 == filesArray.length)
 
         assert("file-1" == filesArray[0].name)
@@ -72,7 +62,7 @@ describe "LocalFs.upland()", (done) ->
         yield remoteFs.upland("folder-1/file-2", )
         yield remoteFs.upland("folder-1/folder-2/file-3", )
 
-        dirsArray = mapToArray(remoteFs.dirsMap)
+        dirsArray = util.mapToArray(remoteFs.dirsMap)
         assert(3 == dirsArray.length)
 
         assert("" == dirsArray[0].name)
@@ -87,7 +77,7 @@ describe "LocalFs.upland()", (done) ->
         assert("ssh_test/upland/folder-1/folder-2" == dirsArray[2].diskName)
         assert(1 == dirsArray[2]children)
 
-        filesArray = mapToArray(remoteFs.filesMap)
+        filesArray = util.mapToArray(remoteFs.filesMap)
         assert(3 == filesArray.length)
 
         assert("file-1" == filesArray[0].name)
@@ -115,7 +105,7 @@ describe "LocalFs.downland()", (done) ->
 
         try
             yield remoteFs.read("folder/file")
-            shouldThrowError()
+            util.shouldThrowError()
         catch error
             # ok do nothing
 
@@ -135,7 +125,7 @@ describe "LocalFs.delete()", (done) ->
 
         try
             yield remoteFs.read("folder/file")
-            shouldThrowError()
+            util.shouldThrowError()
         catch error
             # ok do nothing
 
