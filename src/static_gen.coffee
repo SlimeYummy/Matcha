@@ -4,13 +4,12 @@
 
 "use strict"
 path = require("path").posix
-art = require("art-template")
-cson = require("cson")
 {coroutine} = require("./async_util")
 LocalFs = require("./local_fs")
 VirtualFs = require("./virtual_fs")
 {makersMap} = require("./res_maker")
 color = require("./color")
+TemplateGen = require("./template_gen.coffee")
 
 DEFAULT_ITEM = 10
 DEFAULT_MULTI = false
@@ -22,63 +21,6 @@ TEMPLATE_REGEX = /\.tmpl$/
 IGNORE_REGEX = ///
     \.gliffy$
 ///
-
-readTmplConfig = (virFs, info) ->
-    text = virFs.read(info.name, "utf8")
-    config = cson.parse(text)
-    travel = (object) ->
-        if "object" == typeof object
-            if Array.isArray(object)
-                for value, index in object
-                    object[index] = replaceFile(value)
-            else
-                for key, value of object
-                    object[key] = travel(value)
-        else if "string" == typeof object
-            if "@" == object[0] and "@" == object[1]
-                realPath = "./#{info.url.dir}/#{object[2...]}"
-                realPath = path.normalize(realPath)
-                fileText = virFs.read(realPath, "utf8")
-                return fileText
-        return object
-    return travel(config)
-
-buildTmplSg = (tmplMap, config) ->
-    # read template
-    tmplFunc = tmplMap[config.TEMPLATE]
-    if "function" != typeof tmplFunc
-        throw new Error("Template not found : #{config.TEMPLATE}")
-    # compile template
-    return tmplFunc(config)
-
-buildTmplXsg = (tmplMap, metasArray, config) ->
-    # read template
-    tmplFunc = tmplMap[config.TEMPLATE]
-    if "function" != typeof tmplFunc
-        throw new Error("Template not found : #{config.TEMPLATE}")
-    # filter metasArray
-    metasArray = metasArray.filter (meta) ->
-        if not meta.type
-            return true
-        return type == config.CATALOG.type
-    # compile template
-    item = config.CATALOG.item or DEFAULT_ITEM
-    multi = config.CATALOG.multi or DEFAULT_MULTI
-    config.ITEMS = {}
-    if not multi
-        config.ITEMS.pageIndex = 1
-        config.ITEMS.metasArray = metasArray[0...item]
-        return tmplFunc(config)
-    else
-        for idx in [0...metasArray.length] by item
-            config.ITEMS.pageIndex = idx + 1
-            config.ITEMS.metasArray = metasArray[idx...item]
-            htmlText = tmplFunc(config)
-            tmplsArray.push(htmlText)
-        return tmplsArray
-
-convertTmplName = (dir, name) ->
-
 
 staticGen = (rootPath) ->
     try
@@ -136,9 +78,9 @@ staticGen = (rootPath) ->
     color.white("\nClear reource in #{rootPath}/tmp/")
     tmpDeleteArray = []
     for _, tmpInfo of tmpFs.filesMap
-        if tmpInfo.using
+        if not tmpInfo.using
             tmpDeleteArray.push(tmpInfo.name)
-    for tmpName of tmpDeleteArray
+    for tmpName in tmpDeleteArray
         try
             tmpFs.delete(tmpName)
             color.green("Delete OK : #{tmpName}")
@@ -169,54 +111,29 @@ staticGen = (rootPath) ->
     xsgInfosArray = []
     tmplsMap = Object.create(null)
     for _, virInfo of virFs.filesMap
-        try
-            if STATIC_GEN_REGEX.test(virInfo.name)
-                sgInfosArray.push(virInfo)
-            else if X_STATIC_GEN_REGEX.test(virInfo.name)
-                xsgInfosArray.push(virInfo)
-            else if TEMPLATE_REGEX.test(virInfo.name)
-                tmplText = virFs.read(virInfo.name, "utf8")
-                tmplFunc = art.compile(tmplText)
-                tmplsMap[virInfo.name] = tmplFunc
-        catch error
-            color.yellow("Build ERR : #{virInfo.name}")
-            color.yellow(error.stack)
-
-    # build .sg file
-    sgMetasArray = []
+        if STATIC_GEN_REGEX.test(virInfo.name)
+            sgInfosArray.push(virInfo)
+        else if X_STATIC_GEN_REGEX.test(virInfo.name)
+            xsgInfosArray.push(virInfo)
+    templateGen = TemplateGen.create(virFs)
     for sgInfo in sgInfosArray
         try
-            sgConfig = readTmplConfig(virFs, sgInfo)
-            sgMetasArray.push(sgConfig.META)
-            tmplBuffer = buildTmplSg(tmplsMap, sgConfig)
-            outName = path.normalize("#{sgInfo.url.dir}/#{sgConfig.NAME}.html")
-            rlsFs.write(outName, tmplBuffer)
+            templateGen.genSGFile(sgInfo.name)
         catch error
-            color.yellow("Build ERR : #{virInfo.name}")
+            color.yellow("Build ERR : #{sgInfo.name}")
             color.yellow(error.stack)
-
-    # build .xsg file
     for xsgInfo in xsgInfosArray
         try
-            xsgConfig = readTmplConfig(virFs, xsgInfo)
-            result = buildTmplXsg(tmplsMap, sgMetasArray, xsgConfig)
-            if "string" == typeof result
-                tmplBuffer = result
-                outName = path.normalize("#{xsgInfo.url.dir}/#{xsgConfig.NAME}.html")
-                rlsFs.write(outName, tmplBuffer)
-            else
-                for tmplBuffer, idx in result
-                    outName = path.normalize("#{xsgInfo.url.dir}/#{xsgConfig.NAME}_#{idx+1}.html")
-                    rlsFs.write(name, tmplBuffer)
+            templateGen.genXSGFile(xsgInfo.name)
         catch error
-            color.yellow("Build ERR : #{virInfo.name}")
+            color.yellow("Build ERR : #{xsgInfo.name}")
             color.yellow(error.stack)
 
     # delete resource
     color.white("\nClear reource in #{rootPath}/rls/")
     rlsDeleteArray = []
     for _, rlsInfo of rlsFs.filesMap
-        if rlsInfo.using
+        if not rlsInfo.using
             rlsDeleteArray.push(rlsInfo.name)
     for rlsName in rlsDeleteArray
         try
@@ -230,4 +147,4 @@ staticGen = (rootPath) ->
     color.white("Done ! \n\n")
     return
 
-staticGen("../WebSite")
+staticGen("D:/dev/FenQi.IO")

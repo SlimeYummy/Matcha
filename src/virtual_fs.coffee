@@ -4,7 +4,7 @@
 
 "use strict"
 fs = require("fs")
-{FileInfo, DirInfo} = require("./fs_info.coffee")
+{FileInfo, DirInfo} = require("./file_util.coffee")
 
 
 class VirtualFs

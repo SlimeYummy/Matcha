@@ -2,6 +2,7 @@
 # res_maker.coffee
 # # # # # # # # # # # # # # # # # # # #
 
+"use strict"
 path = require("path").posix
 markdown = require("markdown-it")()
 less = require("less")
@@ -102,7 +103,7 @@ csonMaker = ResMaker.create ".cson", ".json", "utf8", (srcBuffer) ->
     csonObj = cson.parse(srcBuffer)
     if csonObj instanceof Error
         throw error
-    desBuffer = JSON.stringify(csonObj)
+    dstBuffer = JSON.stringify(csonObj)
     return dstBuffer
 makersMap.addMaker(csonMaker)
 

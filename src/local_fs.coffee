@@ -5,7 +5,7 @@
 "use strict"
 fs = require("fs")
 path = require("path").posix
-{FileInfo, DirInfo} = require("./fs_info.coffee")
+{FileInfo, DirInfo} = require("./file_util.coffee")
 
 
 class LocalFs

@@ -5,7 +5,7 @@
 path = require("path").posix
 {coroutine} = require("./async_util.coffee")
 sshUtil = require("./ssh_util.coffee")
-{FileInfo, DirInfo} = require("./fs_info.coffee")
+{FileInfo, DirInfo} = require("./file_util.coffee")
 
 class RemoteFs
     constructor: () ->
