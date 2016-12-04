@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/NaNuNoo/Matcha#readme",
   "dependencies": {
+      "rimraf": ">=2.5.4",
       "art-template": ">=3.0.3",
       "markdown-it": ">=8.1.0",
       "less": ">=2.7.1",

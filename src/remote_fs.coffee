@@ -2,10 +2,9 @@
 # remote_fs.coffee
 # # # # # # # # # # # # # # # # # # # #
 
-path = require("path").posix
 {coroutine} = require("./async_util.coffee")
+fileUtil = require("./file_util.coffee")
 sshUtil = require("./ssh_util.coffee")
-{FileInfo, DirInfo} = require("./file_util.coffee")
 
 class RemoteFs
     constructor: () ->
@@ -20,12 +19,12 @@ class RemoteFs
         info = @filesMap[remotePath]
         if not info
             return Promise.reject(new Error("File not found : #{remotePath}"))
-        return sshUtil.sftpDownland(@_sftpClient, info.diskName, localDiskPath)
+        return sshUtil.sftpDownland(@_sftpClient, info.diskPath, localDiskPath)
 
     upland: (remotePath, localDiskPath) ->
         fileInfo = @filesMap[remotePath]
         if fileInfo
-            return sshUtil.sftpUpland(@_sftpClient, fileInfo.diskName, localDiskPath)
+            return sshUtil.sftpUpland(@_sftpClient, fileInfo.diskPath, localDiskPath)
         return coroutine () =>
             # create folder
             prevDirInfo = @dirsMap[""]
@@ -35,17 +34,17 @@ class RemoteFs
                     dirInfo = @dirsMap[subPath]
                     if not dirInfo
                         prevDirInfo.children = prevDirInfo.children + 1
-                        subDiskPath = path.normalize("#{@rootPath}/#{subPath}")
-                        dirInfo = new DirInfo(subPath, subDiskPath)
+                        subDiskPath = fileUtil.normalize("#{@rootPath}/#{subPath}")
+                        dirInfo = new fileUtil.DirInfo(subPath, subDiskPath)
                         @dirsMap[subPath] = dirInfo
-                        yield sshUtil.sftpMkdir(@_sftpClient, dirInfo.diskName)
+                        yield sshUtil.sftpMkdir(@_sftpClient, dirInfo.diskPath)
                     prevDirInfo = dirInfo
             # upland file
             prevDirInfo.children = prevDirInfo.children + 1
-            remoteDiskPath = path.normalize("#{@rootPath}/#{remotePath}")
-            fileInfo = new FileInfo(remotePath, remoteDiskPath)
+            remoteDiskPath = fileUtil.normalize("#{@rootPath}/#{remotePath}")
+            fileInfo = new fileUtil.FileInfo(remotePath, remoteDiskPath)
             @filesMap[remotePath] = fileInfo
-            yield sshUtil.sftpUpland(@_sftpClient, fileInfo.diskName, localDiskPath)
+            yield sshUtil.sftpUpland(@_sftpClient, fileInfo.diskPath, localDiskPath)
             return
 
     delete: (remotePath) ->
@@ -55,7 +54,7 @@ class RemoteFs
         return coroutine () =>
             # remove file
             delete @filesMap[remotePath]
-            yield sshUtil.sftpUnlink(@_sftpClient, fileInfo.diskName)
+            yield sshUtil.sftpUnlink(@_sftpClient, fileInfo.diskPath)
             # remove folder
             for idx in [remotePath.length-1..0] by -1
                 if "/" == remotePath[idx]
@@ -64,7 +63,7 @@ class RemoteFs
                     dirInfo.children = dirInfo.children - 1
                     if 0 == dirInfo.children
                         delete @dirsMap[subPath]
-                        yield sshUtil.sftpRmdir(@_sftpClient, dirInfo.diskName)
+                        yield sshUtil.sftpRmdir(@_sftpClient, dirInfo.diskPath)
                     else
                         break
             return
@@ -72,7 +71,7 @@ class RemoteFs
 RemoteFs.create = (options, rootPath) ->
     return coroutine () ->
         ins = new RemoteFs()
-        ins.rootPath = path.normalize("#{rootPath}/")
+        ins.rootPath = fileUtil.normalize("#{rootPath}/")
         # create ssh link
         ins._sshClient = yield sshUtil.createSshLink(options)
         # create sftp link
@@ -83,14 +82,14 @@ RemoteFs.create = (options, rootPath) ->
             parent = parentStack.shift()
             remoteParent = parentStack.shift()
             infosArray = yield sshUtil.sftpReaddir(ins._sftpClient, remoteParent)
-            ins.dirsMap[parent] = new DirInfo(parent, remoteParent, infosArray.length)
+            ins.dirsMap[parent] = new fileUtil.DirInfo(parent, remoteParent, infosArray.length)
             for info in infosArray
-                remoteChild = path.normalize("#{ins.rootPath}/#{parent}/#{info.filename}")
+                remoteChild = fileUtil.normalize("#{ins.rootPath}/#{parent}/#{info.filename}")
                 child = remoteChild[ins.rootPath.length...]
                 if "d" == info.longname[0]
                     parentStack.push(child, remoteChild)
                 else
-                    ins.filesMap[child] = new FileInfo(child, remoteChild, info.attrs.mtime)
+                    ins.filesMap[child] = new fileUtil.FileInfo(child, remoteChild, info.attrs.mtime)
         return ins
 
 RemoteFs.destory = (remoteFs) ->

@@ -3,48 +3,39 @@
 # # # # # # # # # # # # # # # # # # # #
 
 "use strict"
-path = require("path").posix
+pathUtil = require("path").posix
 
-class FileInfo
-    constructor: (name, diskName, mtime) ->
-        @name = name
-        @diskName = diskName
-        @url = path.parse(name)
+class exports.FileInfo
+    constructor: (path, diskPath, mtime) ->
+        @path = path
+        @diskPath = diskPath
+        @url = pathUtil.parse(path)
         @mtime = mtime or new Date()
-        @using = false
         return
 
-class DirInfo
-    constructor: (name, diskName, children) ->
-        @name = name
-        @diskName = diskName
+class exports.DirInfo
+    constructor: (path, diskPath, children) ->
+        @path = path
+        @diskPath = diskPath
         @children = children or 0
         return
 
-normalizeWith = (basePath, inputPath) ->
+exports.normalize = pathUtil.normalize
+
+exports.normalizeWith = (basePath, inputPath) ->
     if "/" == inputPath[0]
         return inputPath
     else
-        return path.normalize("#{basePath}/#{inputPath}")
+        return pathUtil.normalize("#{basePath}/#{inputPath}")
 
-renameUnderline = (fileName, extName, index) ->
-    start = 0
-    while start < fileName
-        if "_" != fileName[start]
+exports.renameUnderline = (baseName, extName, index) ->
+    offset = 0
+    while offset < baseName.length
+        if "_" != baseName[offset]
             break
-        start = start + 1
-    end = fileName.length - 1
-    while end > 0
-        end = end - 1
-        if "." == fileName[end]
-            break
-    fragName = fileName[start...end]
+        offset = offset + 1
+    clearName = baseName[offset...]
     if "number" != typeof(index) or 1 == index
-        return "#{fragName}#{extName}"
+        return "#{clearName}#{extName}"
     else
-        return "#{fragName}_#{index}#{extName}"
-
-exports.FileInfo = FileInfo
-exports.DirInfo = DirInfo
-exports.normalizeWith = normalizeWith
-exports.renameUnderline = renameUnderline
+        return "#{clearName}_#{index}#{extName}"

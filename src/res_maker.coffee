@@ -82,8 +82,10 @@ class ResMakersMap
 
 makersMap = new ResMakersMap()
 
-markdownMaker = ResMaker.create ".md", ".txt", "utf8", (srcBuffer) ->
-    dstBuffer = markdown.render(srcBuffer)
+markdownMaker = ResMaker.create ".md", ".mdx", "utf8", (srcBuffer) ->
+    h1RegExp = /^\s*\#[^\#\r\n]+$/m
+    tmpBuffer = srcBuffer.replace(h1RegExp, "")
+    dstBuffer = markdown.render(tmpBuffer)
     return dstBuffer
 makersMap.addMaker(markdownMaker)
 

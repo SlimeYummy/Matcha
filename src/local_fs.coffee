@@ -4,8 +4,7 @@
 
 "use strict"
 fs = require("fs")
-path = require("path").posix
-{FileInfo, DirInfo} = require("./file_util.coffee")
+fileUtil = require("./file_util.coffee")
 
 
 class LocalFs
@@ -15,76 +14,67 @@ class LocalFs
         @dirsMap = null
         return
 
-    read: (name, encoding) ->
-        fileInfo = @filesMap[name]
+    read: (path, encoding) ->
+        fileInfo = @filesMap[path]
         if not fileInfo
-            throw new Error("File not found: #{name}")
-        return fs.readFileSync(fileInfo.diskName, encoding)
+            throw new Error("File not found: #{path}")
+        return fs.readFileSync(fileInfo.diskPath, encoding)
 
-    write: (name, buffer) ->
-        fileInfo = @filesMap[name]
+    write: (path, buffer) ->
+        fileInfo = @filesMap[path]
         if fileInfo
-            fileInfo.using = true
-            return fs.writeFileSync(fileInfo.diskName, buffer)
+            return fs.writeFileSync(fileInfo.diskPath, buffer)
         # create folder
         prevDirInfo = @dirsMap[""]
-        for idx in [0...name.length] by 1
-            if "/" == name[idx]
-                dirPath = name[...idx]
+        for idx in [0...path.length] by 1
+            if "/" == path[idx]
+                dirPath = path[...idx]
                 dirInfo = @dirsMap[dirPath]
                 if not dirInfo
                     prevDirInfo.children = prevDirInfo.children + 1
-                    dirInfo = new DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
+                    dirInfo = new fileUtil.DirInfo(dirPath, "#{@rootPath}/#{dirPath}")
                     @dirsMap[dirPath] = dirInfo
                     fs.mkdirSync("#{@rootPath}/#{dirPath}")
                 prevDirInfo = dirInfo
         # create file
         prevDirInfo.children = prevDirInfo.children + 1
-        fileInfo = new FileInfo(name, "#{@rootPath}/#{name}")
-        fileInfo.using = true
-        @filesMap[name] = fileInfo
+        fileInfo = new fileUtil.FileInfo(path, "#{@rootPath}/#{path}")
+        @filesMap[path] = fileInfo
         # write file
-        return fs.writeFileSync(fileInfo.diskName, buffer)
+        return fs.writeFileSync(fileInfo.diskPath, buffer)
 
-    delete: (name) ->
-        fileInfo = @filesMap[name]
+    delete: (path) ->
+        fileInfo = @filesMap[path]
         if not fileInfo
-            throw new Error("File not found: #{name}")
-        fs.unlinkSync(fileInfo.diskName)
-        delete @filesMap[name]
-        for idx in [name.length-1..0] by -1
-            if "/" == name[idx]
-                dirPath = name[...idx]
+            throw new Error("File not found: #{path}")
+        fs.unlinkSync(fileInfo.diskPath)
+        delete @filesMap[path]
+        for idx in [path.length-1..0] by -1
+            if "/" == path[idx]
+                dirPath = path[...idx]
                 dirInfo = @dirsMap[dirPath]
                 if dirInfo.children <= 1
-                    fs.rmdirSync(dirInfo.diskName)
+                    fs.rmdirSync(dirInfo.diskPath)
                     delete @dirsMap[dirPath]
                 else
                     dirInfo.children = dirInfo.children - 1
                     break
         return
 
-    touch: (name) ->
-        fileInfo = @filesMap[name]
-        if not fileInfo
-            throw new Error("File not found: #{name}")
-        fileInfo.using = true
-        return
-
 LocalFs.create = (rootPath) ->
     # travel root
-    rootPath = path.normalize("#{rootPath}/")[...-1]
+    rootPath = fileUtil.normalize("#{rootPath}/")[...-1]
     filesMap = Object.create(null)
     dirsMap = Object.create(null)
     travelFunc = (parent, diskParent) ->
         filesArray = fs.readdirSync(diskParent)
-        dirsMap[parent] = new DirInfo(parent, diskParent, filesArray.length)
+        dirsMap[parent] = new fileUtil.DirInfo(parent, diskParent, filesArray.length)
         for file in filesArray
-            diskChild = path.normalize("#{rootPath}/#{parent}/#{file}")
-            child = diskChild[rootPath.length+1...]
+            diskChild = fileUtil.normalize("#{rootPath}/#{parent}/#{file}")
+            child = diskChild[rootPath.length...]
             stat = fs.statSync(diskChild)
             if stat.isFile()
-                filesMap[child] = new FileInfo(child, diskChild, stat.mtime)
+                filesMap[child] = new fileUtil.FileInfo(child, diskChild, stat.mtime)
             else if stat.isDirectory()
                 travelFunc(child, diskChild)
         return

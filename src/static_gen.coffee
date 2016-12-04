@@ -3,7 +3,7 @@
 # # # # # # # # # # # # # # # # # # # #
 
 "use strict"
-path = require("path").posix
+rmDirpSync = require("rimraf").sync
 {coroutine} = require("./async_util")
 LocalFs = require("./local_fs")
 VirtualFs = require("./virtual_fs")
@@ -47,7 +47,7 @@ staticGen = (rootPath) ->
     for _, srcInfo of srcFs.filesMap
         try
             # ignore ?
-            if IGNORE_REGEX.test(srcInfo.name)
+            if IGNORE_REGEX.test(srcInfo.path)
                 continue
             # need compile ?
             maker = makersMap.findBySrcExt(srcInfo.url.ext)
@@ -55,54 +55,38 @@ staticGen = (rootPath) ->
                 infosArray.push(srcInfo)
                 continue
             # need update ?
-            tmpName = maker.toDstName(srcInfo.name)
+            tmpName = maker.toDstName(srcInfo.path)
             tmpInfo = tmpFs.filesMap[tmpName]
             if tmpInfo and srcInfo.mtime < tmpInfo.mtime
-                tmpFs.touch(tmpName)
                 infosArray.push(tmpInfo)
                 continue
             # compile resource
-            srcBuffer = srcFs.read(srcInfo.name, maker.encoding)
+            srcBuffer = srcFs.read(srcInfo.path, maker.encoding)
             tmpBuffer = maker.compile(srcBuffer)
             tmpFs.write(tmpName, tmpBuffer)
             tmpInfo = tmpFs.filesMap[tmpName]
             infosArray.push(tmpInfo)
-            color.green("Compile OK : #{srcInfo.name}")
+            color.green("Compile OK : #{srcInfo.path}")
         catch error
-            color.yellow("Compile ERR : #{srcInfo.name}")
+            color.yellow("Compile ERR : #{srcInfo.path}")
             color.yellow(error.stack)
 
     virFs = VirtualFs.create(infosArray)
-
-    # delete resource
-    color.white("\nClear reource in #{rootPath}/tmp/")
-    tmpDeleteArray = []
-    for _, tmpInfo of tmpFs.filesMap
-        if not tmpInfo.using
-            tmpDeleteArray.push(tmpInfo.name)
-    for tmpName in tmpDeleteArray
-        try
-            tmpFs.delete(tmpName)
-            color.green("Delete OK : #{tmpName}")
-        catch error
-            color.yellow("Delete ERR : #{tmpName}")
-            color.yellow(error.stack)
 
     # copy resource
     color.white("\nCopy reource to #{rootPath}/rls/")
     for _, virInfo of virFs.filesMap
         try
-            if UNDER_LINE_REGEX.test(virInfo.name)
+            if UNDER_LINE_REGEX.test(virInfo.path)
                 continue
-            rlsInfo = rlsFs.filesMap[virInfo.name]
+            rlsInfo = rlsFs.filesMap[virInfo.path]
             if rlsInfo and virInfo.mtime < rlsInfo.mtime
-                rlsFs.touch(rlsInfo.name)
                 continue
-            copyBuffer = virFs.read(virInfo.name)
-            rlsFs.write(virInfo.name, copyBuffer)
-            color.green("Copy OK : #{virInfo.name}")
+            copyBuffer = virFs.read(virInfo.path)
+            rlsFs.write(virInfo.path, copyBuffer)
+            color.green("Copy OK : #{virInfo.path}")
         catch error
-            color.yellow("Copy ERR : #{virInfo.name}")
+            color.yellow("Copy ERR : #{virInfo.path}")
             color.yellow(error.stack)
 
     # build template
@@ -111,40 +95,40 @@ staticGen = (rootPath) ->
     xsgInfosArray = []
     tmplsMap = Object.create(null)
     for _, virInfo of virFs.filesMap
-        if STATIC_GEN_REGEX.test(virInfo.name)
+        if STATIC_GEN_REGEX.test(virInfo.path)
             sgInfosArray.push(virInfo)
-        else if X_STATIC_GEN_REGEX.test(virInfo.name)
+        else if X_STATIC_GEN_REGEX.test(virInfo.path)
             xsgInfosArray.push(virInfo)
-    templateGen = TemplateGen.create(virFs)
+    templateGen = TemplateGen.create(virFs, rlsFs)
     for sgInfo in sgInfosArray
         try
-            templateGen.genSGFile(sgInfo.name)
+            templateGen.sgGen(sgInfo.path)
+            color.green("Build OK : #{sgInfo.path}")
         catch error
-            color.yellow("Build ERR : #{sgInfo.name}")
+            color.yellow("Build ERR : #{sgInfo.path}")
             color.yellow(error.stack)
     for xsgInfo in xsgInfosArray
         try
-            templateGen.genXSGFile(xsgInfo.name)
+            templateGen.xsgGen(xsgInfo.path)
+            color.green("Build OK : #{xsgInfo.path}")
         catch error
-            color.yellow("Build ERR : #{xsgInfo.name}")
-            color.yellow(error.stack)
-
-    # delete resource
-    color.white("\nClear reource in #{rootPath}/rls/")
-    rlsDeleteArray = []
-    for _, rlsInfo of rlsFs.filesMap
-        if not rlsInfo.using
-            rlsDeleteArray.push(rlsInfo.name)
-    for rlsName in rlsDeleteArray
-        try
-            rlsFs.delete(rlsName)
-            color.green("Delete OK : #{rlsInfo.name}")
-        catch error
-            color.yellow("Delete ERR : #{rlsInfo.name}")
+            color.yellow("Build ERR : #{xsgInfo.path}")
             color.yellow(error.stack)
 
     # done
     color.white("Done ! \n\n")
     return
 
+staticClear = (rootPath) ->
+    try
+        rmDirpSync("#{rootPath}/tmp/*")
+        rmDirpSync("#{rootPath}/rls/*")
+        color.white("Clear OK.")
+    catch error
+        color.red("Clear ERR.")
+        color.red(error.stack)
+    color.white("Done ! \n\n")
+    return
+
 staticGen("D:/dev/FenQi.IO")
+#staticClear("D:/dev/FenQi.IO")

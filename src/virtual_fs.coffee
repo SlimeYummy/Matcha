@@ -4,34 +4,28 @@
 
 "use strict"
 fs = require("fs")
-{FileInfo, DirInfo} = require("./file_util.coffee")
-
 
 class VirtualFs
-    constructor: () ->
-        @filesMap = null
-        return
+    @create: (infosArray) ->
+        filesMap = Object.create(null)
+        for info in infosArray
+            if filesMap[info.path]
+                throw new Error("File path confilict: #{info.path}")
+            filesMap[info.path] = info
+        ins = new VirtualFs()
+        ins.filesMap = filesMap
+        return ins
 
-    read: (name, encoding) ->
-        fileInfo = @filesMap[name]
+    read: (path, encoding) ->
+        fileInfo = @filesMap[path]
         if not fileInfo
-            throw new Error("File not found: #{name}")
-        return fs.readFileSync(fileInfo.diskName, encoding)
+            throw new Error("File not found: #{path}")
+        return fs.readFileSync(fileInfo.diskPath, encoding)
 
-    write: (name, buffer) ->
-        fileInfo = @filesMap[name]
+    write: (path, buffer) ->
+        fileInfo = @filesMap[path]
         if fileInfo
-            throw new Error("File not found: #{name}")
-        return fs.writeFileSync(fileInfo.diskName, buffer)
-
-VirtualFs.create = (infosArray) ->
-    filesMap = Object.create(null)
-    for info in infosArray
-        if filesMap[info.name]
-            throw new Error("File name confilict: #{info.name}")
-        filesMap[info.name] = info
-    ins = new VirtualFs()
-    ins.filesMap = filesMap
-    return ins
+            throw new Error("File not found: #{path}")
+        return fs.writeFileSync(fileInfo.diskPath, buffer)
 
 module.exports = VirtualFs
