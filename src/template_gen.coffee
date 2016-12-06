@@ -74,13 +74,13 @@ class TemplateGen
         configsArray = @_configsArray.filter (sgConfig) ->
             return -1 != typesSet.indexOf(sgConfig.meta.type)
         configsArray.sort (a, b) ->
-            return a.date < b.date
+            return a.meta.date < b.meta.date
         return configsArray
 
-    _xsgMakeUrls: (config, configFi) ->
+    _xsgMakeUrls: (config, configsArray, configFi) ->
         pageItems = config.gen.pageItems or DEFAULT_PAGE_ITEMS
         multiPage = config.gen.multiPage or DEFAULT_MULTI_PAGE
-        finishCount = if multiPage then @_configsArray.length else pageItems
+        finishCount = if multiPage then configsArray.length else pageItems
         urlsArray = for idx in [0...finishCount] by pageItems
             htmlName = fileUtil.renameUnderline(configFi.url.name, ".html")
             dirPath = configFi.url.dir
@@ -88,13 +88,13 @@ class TemplateGen
             {htmlPath, dirPath}
         return urlsArray
 
-    _xsgSplitPage: (config, urlsArray) ->
+    _xsgSplitPage: (config, configsArray, urlsArray) ->
         pageItems = config.gen.pageItems or DEFAULT_PAGE_ITEMS
         multiPage = config.gen.multiPage or DEFAULT_MULTI_PAGE
-        finishCount = if multiPage then @_configsArray.length else pageItems
+        finishCount = if multiPage then configsArray.length else pageItems
         pageCount = Math.ceil(finishCount / pageItems)
         pagesArray = for index in [0...finishCount] by pageItems
-            itemsArray = @_configsArray[index...index+pageItems]
+            itemsArray = configsArray[index...index+pageItems]
             pageIndex = index
             {itemsArray, pageIndex, pageCount}
         return pagesArray
@@ -105,8 +105,9 @@ class TemplateGen
             throw new Error("File not found : #{configPath}")
         # load config
         config = @_loadConfig(configFi)
-        urlsArray = @_xsgMakeUrls(config, configFi)
-        pagesArray = @_xsgSplitPage(config, urlsArray)
+        configsArray = @_xsgFilter(config)
+        urlsArray = @_xsgMakeUrls(config, configsArray, configFi)
+        pagesArray = @_xsgSplitPage(config, configsArray, urlsArray)
         # build template
         tmplFunc = @_findTmpl(config)
         for index in [0...pagesArray.length] by 1

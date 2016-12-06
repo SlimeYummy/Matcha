@@ -90,9 +90,10 @@ markdownMaker = ResMaker.create ".md", ".mdx", "utf8", (srcBuffer) ->
 makersMap.addMaker(markdownMaker)
 
 lessMaker = ResMaker.create ".less", ".css", "utf8", (srcBuffer) ->
+    dstBuffer = ""
     less.render srcBuffer, (error, output) ->
         throw error if error
-        dstBuffer = output
+        dstBuffer = output.css
     return dstBuffer
 makersMap.addMaker(lessMaker)
 

@@ -23,6 +23,7 @@ class LocalFs
     write: (path, buffer) ->
         fileInfo = @filesMap[path]
         if fileInfo
+            fileInfo.mtime = new Date()
             return fs.writeFileSync(fileInfo.diskPath, buffer)
         # create folder
         prevDirInfo = @dirsMap[""]
@@ -41,6 +42,7 @@ class LocalFs
         fileInfo = new fileUtil.FileInfo(path, "#{@rootPath}/#{path}")
         @filesMap[path] = fileInfo
         # write file
+        fileInfo.mtime = new Date()
         return fs.writeFileSync(fileInfo.diskPath, buffer)
 
     delete: (path) ->

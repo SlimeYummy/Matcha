@@ -24,6 +24,7 @@ class RemoteFs
     upland: (remotePath, localDiskPath) ->
         fileInfo = @filesMap[remotePath]
         if fileInfo
+            fileInfo.mtime = new Date()
             return sshUtil.sftpUpland(@_sftpClient, fileInfo.diskPath, localDiskPath)
         return coroutine () =>
             # create folder
@@ -44,6 +45,7 @@ class RemoteFs
             remoteDiskPath = fileUtil.normalize("#{@rootPath}/#{remotePath}")
             fileInfo = new fileUtil.FileInfo(remotePath, remoteDiskPath)
             @filesMap[remotePath] = fileInfo
+            fileInfo.mtime = new Date()
             yield sshUtil.sftpUpland(@_sftpClient, fileInfo.diskPath, localDiskPath)
             return
 
