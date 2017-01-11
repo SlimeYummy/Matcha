@@ -23,6 +23,8 @@ IGNORE_REGEX = ///
 ///
 
 staticGen = (rootPath) ->
+    color.white('')
+    
     try
         srcFs = LocalFs.create("#{rootPath}/src/")
     catch error
@@ -42,7 +44,7 @@ staticGen = (rootPath) ->
         return
 
     # compile resource
-    color.white("\nCompile reource in #{rootPath}/src/")
+    color.white("Compile reource in #{rootPath}/src/")
     infosArray = []
     for _, srcInfo of srcFs.filesMap
         try
@@ -66,9 +68,10 @@ staticGen = (rootPath) ->
             tmpFs.write(tmpName, tmpBuffer)
             tmpInfo = tmpFs.filesMap[tmpName]
             infosArray.push(tmpInfo)
-            color.green("Compile OK : #{srcInfo.path}")
+            color.green("Compile OK - #{srcInfo.path}")
         catch error
-            color.yellow("Compile ERR : #{srcInfo.path}")
+            color.yellow("Compile ERR - #{srcInfo.path}")
+            color.yellow(error)
             color.yellow(error.stack)
 
     virFs = VirtualFs.create(infosArray)
@@ -84,9 +87,9 @@ staticGen = (rootPath) ->
                 continue
             copyBuffer = virFs.read(virInfo.path)
             rlsFs.write(virInfo.path, copyBuffer)
-            color.green("Copy OK : #{virInfo.path}")
+            color.green("Copy OK - #{virInfo.path}")
         catch error
-            color.yellow("Copy ERR : #{virInfo.path}")
+            color.yellow("Copy ERR - #{virInfo.path}")
             color.yellow(error.stack)
 
     # build template
@@ -103,32 +106,59 @@ staticGen = (rootPath) ->
     for sgInfo in sgInfosArray
         try
             templateGen.sgGen(sgInfo.path)
-            color.green("Build OK : #{sgInfo.path}")
+            color.green("Build OK - #{sgInfo.path}")
         catch error
-            color.yellow("Build ERR : #{sgInfo.path}")
+            color.yellow("Build ERR - #{sgInfo.path}")
             color.yellow(error.stack)
     for xsgInfo in xsgInfosArray
         try
             templateGen.xsgGen(xsgInfo.path)
-            color.green("Build OK : #{xsgInfo.path}")
+            color.green("Build OK - #{xsgInfo.path}")
         catch error
-            color.yellow("Build ERR : #{xsgInfo.path}")
+            color.yellow("Build ERR - #{xsgInfo.path}")
             color.yellow(error.stack)
 
     # done
-    color.white("Done ! \n\n")
+    color.white('')
+    color.white('====================')
+    color.white('Matcha gen OK!')
+    color.white('')
     return
 
 staticClear = (rootPath) ->
+    color.white('')
     try
         rmDirpSync("#{rootPath}/tmp/*")
-        rmDirpSync("#{rootPath}/rls/*")
-        color.white("Clear OK.")
+        color.green("Clear OK - #{rootPath}/tmp/*")
     catch error
-        color.red("Clear ERR.")
+        color.red("Clear ERR - #{rootPath}/tmp/*")
         color.red(error.stack)
-    color.white("Done ! \n\n")
+    try
+        rmDirpSync("#{rootPath}/rls/*")
+        color.green("Clear OK - #{rootPath}/rls/*")
+    catch error
+        color.red("Clear ERR - #{rootPath}/rls/*")
+        color.red(error.stack)
+    color.white('')
+    color.white('====================')
+    color.white('Matcha clear OK!')
+    color.white('')
     return
 
-staticGen("D:/dev/FenQi.IO")
+#staticGen("D:/dev/FenQi.IO")
 #staticClear("D:/dev/FenQi.IO")
+
+switch process.argv[2]
+    when 'gen'
+        if 4 == process.argv.length
+            staticGen(process.argv[3])
+            return
+    when 'clear'
+        if 4 == process.argv.length
+            staticClear(process.argv[3])
+            return
+console.log """
+Matcha usage:
+    gen [path]
+    clean [path]
+"""
