@@ -1,10 +1,10 @@
 {
   "name": "matcha",
   "version": "0.0.1",
-  "description": "A static blog toolkit.",
+  "description": "NaNuNoo's blog https://FenQi.IO",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -16,12 +16,28 @@
     "url": "https://github.com/NaNuNoo/Matcha/issues"
   },
   "homepage": "https://github.com/NaNuNoo/Matcha#readme",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-external-helpers": "^6.18.0",
+    "babel-plugin-syntax-decorators": "^6.13.0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-preset-es2015-rollup": "^3.0.0",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "react": "^15.0.2",
+    "react-dom": "^15.0.2",
+    "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-commonjs": "^5.0.5",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-replace": "^1.1.1",
+    "rollup-plugin-uglify": "^1.0.1"
+  },
   "dependencies": {
-      "rimraf": ">=2.5.4",
-      "art-template": ">=3.0.3",
-      "markdown-it": ">=8.1.0",
-      "less": ">=2.7.1",
-      "coffee-script": ">=1.11.1",
-      "cson": ">=4.0.0"
+    "express": "^4.15.4",
+    "material-ui": "^0.18.7",
+    "react-redux": "^5.0.6",
+    "react-tap-event-plugin": "^2.0.1",
+    "redux": "^3.7.2",
+    "redux-thunk": "^2.2.0"
   }
 }
