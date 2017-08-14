@@ -28,7 +28,9 @@
     "react-dom": "^15.0.2",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^5.0.5",
-    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-resolve": "^2.1.1",
     "rollup-plugin-replace": "^1.1.1",
     "rollup-plugin-uglify": "^1.0.1"
   },
@@ -36,8 +38,11 @@
     "express": "^4.15.4",
     "material-ui": "^0.18.7",
     "react-redux": "^5.0.6",
+    "react-router": "^4.1.2",
+    "react-router-dom": "^4.1.2",
     "react-tap-event-plugin": "^2.0.1",
     "redux": "^3.7.2",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "source-map-support": "^0.4.15"
   }
 }
