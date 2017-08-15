@@ -7,6 +7,7 @@ import { Route, Link } from 'react-router-dom';
 // material-ui
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
+import TitleBar from '../view/framework/title-bar';
 
 const About = React.createClass({
   render() {
@@ -29,7 +30,7 @@ export const App = ({ store }) => {
   return (
     <Provider store={store}>
       <MuiThemeProvider>
-        <Route path="/" component={About} />
+        <Route path="/" component={TitleBar} />
       </MuiThemeProvider>
     </Provider>
   );

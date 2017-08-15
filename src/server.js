@@ -9,9 +9,9 @@ import { serverRender } from './server-render';
 sourcemap.install();
 
 const server = express();
+server.use(express.static('dev'));
 
 server.get('/', (req, res) => {
-  console.log('ssssssssssss', req.url);
   const html = serverRender(req.url);
   res.send(html);
 });

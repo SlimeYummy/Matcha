@@ -14,25 +14,19 @@ import { BrowserRouter } from 'react-router-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
 // app
-import { App } from './component/app';
+import { App } from './view/app';
 
 
-document.onreadystatechange = () => {
-  if (document.readyState !== 'interactive') {
-    return;
-  }
+injectTapEventPlugin();
 
-  injectTapEventPlugin();
+const store = createStore(
+  rootReducer,
+  window.__INITIAL_STATE__ || undefined,
+  applyMiddleware(thunkMiddleware)
+);
 
-  const store = createStore(
-    rootReducer,
-    window.__INITIAL_STATE__ || undefined,
-    applyMiddleware(thunkMiddleware)
-  );
-
-  render((
-    <BrowserRouter>
-      <App store={store} />
-    </BrowserRouter>
-  ), document.getElementById('Matcha'));
-}
+render((
+  <BrowserRouter>
+    <App store={store} />
+  </BrowserRouter>
+), document.getElementById('Matcha'));
