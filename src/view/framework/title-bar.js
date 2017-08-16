@@ -6,9 +6,9 @@ import css from './title-bar.css';
 export default function TitleBar() {
   return (
     <div className={css.wrap}>
-      <span className={css.logo}>Logo</span>
+      <img src="./public/logo.svg" className={css.logo} />
       <span className={css.space} />
-      <span className={css.menu}>Menu</span>
+      <img src="./public/menu-5.svg" className={css.menu} />
     </div>
   );
 }
