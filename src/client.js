@@ -1,23 +1,45 @@
-// react
+import { blue, red } from 'material-ui/colors';
+import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+import createPalette from 'material-ui/styles/palette';
 import React, { Component } from 'react';
 import { render } from 'react-dom';
-
-// redux
+import { BrowserRouter } from 'react-router-dom';
+import injectTapEventPlugin from 'react-tap-event-plugin';
 import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
+
 import rootReducer from './reducer';
-
-// react-router
-import { BrowserRouter } from 'react-router-dom';
-
-// material-ui
-import injectTapEventPlugin from 'react-tap-event-plugin';
-
-// app
 import { App } from './view/app';
 
 
 injectTapEventPlugin();
+
+class Client extends Component {
+  componentDidMount() {
+    const jssStyles = document.getElementById('jss-server-side');
+    if (jssStyles && jssStyles.parentNode) {
+      jssStyles.parentNode.removeChild(jssStyles);
+    }
+  }
+
+  render() {
+    return (
+      <MuiThemeProvider theme={this.props.theme}>
+        <BrowserRouter>
+          <App store={this.props.store} />
+        </BrowserRouter>
+      </MuiThemeProvider>
+    );
+  }
+};
+
+const theme = createMuiTheme({
+  palette: createPalette({
+    primary: blue,
+    accent: red,
+    type: 'light',
+  }),
+});
 
 const store = createStore(
   rootReducer,
@@ -26,7 +48,5 @@ const store = createStore(
 );
 
 render((
-  <BrowserRouter>
-    <App store={store} />
-  </BrowserRouter>
+  <Client store={store} theme={theme} />
 ), document.getElementById('Matcha'));

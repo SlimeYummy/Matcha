@@ -10,11 +10,20 @@ import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import rootReducer from '../reducer';
 
+// material-ui
+import { JssProvider, SheetsRegistry } from 'react-jss'
+import { create } from 'jss';
+import preset from 'jss-preset-default';
+import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+import createPalette from 'material-ui/styles/palette';
+import createGenerateClassName from 'material-ui/styles/createGenerateClassName';
+import { blue, red } from 'material-ui/colors';
+
 // app
 import { App } from '../view/app';
 
 
-function htmlTemplate(html, initialState) {
+function htmlTemplate(html, css, initialState) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,8 +36,11 @@ function htmlTemplate(html, initialState) {
 </head>
 <body>
 <div id="Matcha">${html}</div>
+<style>
+body,div,h1,h2,h3,h4,h5,h6,p{paddind:0; margin:0;}
+</style>
+<style id="jss-server-side">${css}</style>
 <script>window.__INITIAL_STATE__=${JSON.stringify(initialState)};</script>
-<link rel="stylesheet" type="text/css" href="/style.css"/>
 <script src="/client.js"></script>
 </body>
 </html>`;
@@ -36,17 +48,37 @@ function htmlTemplate(html, initialState) {
 
 export function serverRender(url) {
   const store = createStore(rootReducer);
-  const context = {}
+
+  const sheetsRegistry = new SheetsRegistry();
+
+  const theme = createMuiTheme({
+    palette: createPalette({
+      primary: blue,
+      accent: red,
+      type: 'light',
+    }),
+  });
+
+  const jss = create(preset());
+  jss.options.createGenerateClassName = createGenerateClassName;
+
+  const context = {};
 
   const html = renderToString(
-    <StaticRouter location={url} context={context}>
-      <App store={store} />
-    </StaticRouter>
+    <JssProvider registry={sheetsRegistry} jss={jss}>
+      <MuiThemeProvider theme={theme} sheetsManager={new Map()}>
+        <StaticRouter location={url} context={context}>
+          <App store={store} />
+        </StaticRouter>
+      </MuiThemeProvider>
+    </JssProvider>
   );
+
+  const css = sheetsRegistry.toString()
 
   if (context.url) {
     return null;
   } else {
-    return htmlTemplate(html);
+    return htmlTemplate(html, css);
   }
 }

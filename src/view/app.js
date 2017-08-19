@@ -29,9 +29,7 @@ const Inbox = React.createClass({
 export const App = ({ store }) => {
   return (
     <Provider store={store}>
-      <MuiThemeProvider>
-        <Route path="/" component={FrameWork} />
-      </MuiThemeProvider>
+      <Route path="/" component={FrameWork} />
     </Provider>
   );
 }

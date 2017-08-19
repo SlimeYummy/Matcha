@@ -1,14 +1,23 @@
-// react
+import AppBar from 'material-ui/AppBar';
+import IconButton from 'material-ui/IconButton';
+import { withStyles } from 'material-ui/styles';
 import React, { Component } from 'react';
 
-import css from './title-bar.css';
+import { IconMenu } from '../../icon';
+import styles from './title-bar-styles';
 
-export default function TitleBar() {
+function TitleBar({
+  classes,
+}) {
   return (
-    <div className={css.wrap}>
-      <img src="./public/logo.svg" className={css.logo} />
-      <span className={css.space} />
-      <img src="./public/menu-5.svg" className={css.menu} />
-    </div>
+    <AppBar className={classes.wrap}>
+      <img className={classes.logo} src="./public/logo.svg" />
+      <span className={classes.space} />
+      <IconButton className={classes.menu}>
+        <IconMenu />
+      </IconButton>
+    </AppBar>
   );
 }
+
+export default withStyles(styles)(TitleBar);
