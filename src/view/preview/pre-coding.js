@@ -1,22 +1,29 @@
-import React, { Component } from 'react';
-import Paper from 'material-ui/Paper';
 import { withStyles } from 'material-ui/styles';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
+import PreBase from './pre-base';
 import styles from './pre-coding-styles';
 
 function _PreCoding({
   classes, title, author, date, content
 }) {
   return (
-    <Paper className={classes.wrap}>
-      <div className={classes.meta}>
-        <div className={classes.title}>{title}</div>
-        <div className={classes.author}>{author}</div>
-        <div className={classes.date}>{date}</div>
-      </div>
-      <div className={classes.content}>{content}</div>
-    </Paper>
+    <PreBase
+      title={title}
+      author={author}
+      date={date}
+      content={content}
+      extraClasses={classes}
+    />
   );
 }
+
+_PreCoding.propsType = {
+  title: PropTypes.string.isRequired,
+  author: PropTypes.string.isRequired,
+  date: PropTypes.string.isRequired,
+  content: PropTypes.node.isRequired,
+};
 
 export const PreCoding = withStyles(styles)(_PreCoding);

@@ -4,9 +4,8 @@
   "description": "NaNuNoo's blog https://FenQi.IO",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "test": "webpack && node ./dev/server.js"
+    "test": "webpack && node ./dev/server.js",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -45,6 +44,7 @@
     "express": "^4.15.4",
     "material-ui": "^1.0.0-beta.5",
     "postcss-cssnext": "^3.0.2",
+    "prop-types": "^15.5.10",
     "react-redux": "^5.0.6",
     "react-router": "^4.1.2",
     "react-router-dom": "^4.1.2",

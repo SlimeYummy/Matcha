@@ -1,22 +1,32 @@
 import React, { Component } from 'react';
-import Paper from 'material-ui/Paper';
+import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 
+import PreBase from './pre-base';
 import styles from './pre-painting-styles';
 
 function _PrePainting({
-  classes, title, author, date, content
+  classes, title, author, date, url
 }) {
+  const content = (
+    <img className={classes.img} src={url} />
+  );
   return (
-    <Paper className={classes.wrap}>
-      <div className={classes.meta}>
-        <div className={classes.title}>{title}</div>
-        <div className={classes.author}>{author}</div>
-        <div className={classes.date}>{date}</div>
-      </div>
-      <img className={classes.content} src="./pic.jpg" />
-    </Paper>
+    <PreBase
+      title={title}
+      author={author}
+      date={date}
+      content={content}
+      extraClasses={classes}
+    />
   );
 }
+
+_PrePainting.propsType = {
+  title: PropTypes.string.isRequired,
+  author: PropTypes.string.isRequired,
+  date: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
+};
 
 export const PrePainting = withStyles(styles)(_PrePainting);

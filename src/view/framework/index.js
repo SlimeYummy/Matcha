@@ -31,7 +31,7 @@ export default function FrameWork() {
           title="WebGL 管线全流程及相关函数"
           author="NaNuNoo"
           date="2016-11-13"
-          content={TEXT}
+          url="./pic.jpg"
         />
       </Content>
     </div>

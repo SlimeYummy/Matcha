@@ -2,8 +2,9 @@ export default {
   wrap: {
     display: 'flex',
     flexDirection: 'row',
-    height: 50,
     zIndex: 1400,
+    height: 50,
+    boxShadow: 'none'
   },
 
   logo: {
@@ -14,6 +15,6 @@ export default {
   },
 
   menu: {
-
+    marginRight: '24px',
   },
 };

@@ -1,7 +1,11 @@
 export const GLOBAL_CSS = `
-html, body {
+html {
+  box-sizing: border-box;
   font-size: 16px;
   line-height: 1.7;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
 }
 html, body, div, h1, h2, h3, h4, h5, h6, p {
   padding: 0;
@@ -20,7 +24,8 @@ export const FONT_SIZE_3 = '2.000rem';
 export const FONT_SIZE_4 = '2.828rem';
 export const FONT_SIZE_5 = '4.000rem';
 
-export const LINE_HEIGHT_0 = '0.8rem';
-export const LINE_HEIGHT_1 = '1.6rem';
-export const LINE_HEIGHT_2 = '3.2rem';
-export const LINE_HEIGHT_3 = '4.8rem';
+export const LINE_HEIGHT_0 = '0.85rem';
+export const LINE_HEIGHT_1 = '1.7rem';
+export const LINE_HEIGHT_2 = '3.4rem';
+export const LINE_HEIGHT_3 = '5.1rem';
+export const LINE_HEIGHT_4 = '6.8rem';
