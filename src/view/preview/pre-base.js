@@ -16,14 +16,12 @@ class PreBase extends Component {
   }
 
   onEnter(event) {
-    console.log(event);
     if (this.state.isHover !== true) {
       this.setState({ isHover: true });
     }
   }
 
   onLeave(event) {
-    console.log(event);
     if (this.state.isHover !== false) {
       this.setState({ isHover: false });
     }
@@ -49,8 +47,14 @@ class PreBase extends Component {
       >
         <div className={this._mergeStyles('meta')}>
           <div className={this._mergeStyles('title')}>{title}</div>
-          <div className={this._mergeStyles('author')}>{author}</div>
-          <div className={this._mergeStyles('date')}>{date}</div>
+          <div className={this._mergeStyles('author')}>
+            <span className={this._mergeStyles('sign')} />
+            {author}
+          </div>
+          <div className={this._mergeStyles('date')}>
+            <span className={this._mergeStyles('sign')} />
+            {date}
+          </div>
         </div>
         <div className={this._mergeStyles('content')}>
           {content}
@@ -66,6 +70,7 @@ PreBase.propTypes = {
   author: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
   content: PropTypes.node.isRequired,
+  color: PropTypes.string,
 };
 
 export default withStyles(styles)(PreBase);

@@ -1,7 +1,7 @@
 export const GLOBAL_CSS = `
 html {
   box-sizing: border-box;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.7;
 }
 *, *:before, *:after {
@@ -24,6 +24,7 @@ export const FONT_SIZE_3 = '2.000rem';
 export const FONT_SIZE_4 = '2.828rem';
 export const FONT_SIZE_5 = '4.000rem';
 
+export const LINE_HEIGHT_NUM = 1.7;
 export const LINE_HEIGHT_0 = '0.85rem';
 export const LINE_HEIGHT_1 = '1.7rem';
 export const LINE_HEIGHT_2 = '3.4rem';

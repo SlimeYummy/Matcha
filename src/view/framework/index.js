@@ -27,11 +27,47 @@ export default function FrameWork() {
           date="2016-11-13"
           content={TEXT}
         />
+        <PreCoding
+          title="WebGL 管线全流程及相关函数"
+          author="NaNuNoo"
+          date="2016-11-13"
+          content={TEXT}
+        />
+        <PreCoding
+          title="WebGL 管线全流程及相关函数"
+          author="NaNuNoo"
+          date="2016-11-13"
+          content={TEXT}
+        />
         <PrePainting
           title="WebGL 管线全流程及相关函数"
           author="NaNuNoo"
           date="2016-11-13"
           url="./pic.jpg"
+        />
+        <PreCoding
+          title="WebGL 管线全流程及相关函数"
+          author="NaNuNoo"
+          date="2016-11-13"
+          content={TEXT}
+        />
+        <PrePainting
+          title="WebGL 管线全流程及相关函数"
+          author="NaNuNoo"
+          date="2016-11-13"
+          url="./b.jpg"
+        />
+        <PrePainting
+          title="WebGL 管线全流程及相关函数"
+          author="NaNuNoo"
+          date="2016-11-13"
+          url="./2.jpg"
+        />
+        <PrePainting
+          title="WebGL 管线全流程及相关函数"
+          author="NaNuNoo"
+          date="2016-11-13"
+          url="./c.jpg"
         />
       </Content>
     </div>

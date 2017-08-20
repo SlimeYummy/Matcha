@@ -6,6 +6,10 @@ export default {
     background: '#ffffff',
   },
 
+  sign: {
+    background: '#444444',
+  },
+
   img: {
     width: '100%',
     height: '100%',
