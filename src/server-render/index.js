@@ -21,6 +21,7 @@ import { blue, red } from 'material-ui/colors';
 
 // app
 import { App } from '../view/app';
+import { GLOBAL_CSS } from '../styles-const';
 
 
 function htmlTemplate(html, css, initialState) {
@@ -36,9 +37,7 @@ function htmlTemplate(html, css, initialState) {
 </head>
 <body>
 <div id="Matcha">${html}</div>
-<style>
-body,div,h1,h2,h3,h4,h5,h6,p{paddind:0; margin:0;}
-</style>
+<style>${GLOBAL_CSS}</style>
 <style id="jss-server-side">${css}</style>
 <script>window.__INITIAL_STATE__=${JSON.stringify(initialState)};</script>
 <script src="/client.js"></script>
