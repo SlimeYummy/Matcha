@@ -1,12 +1,11 @@
 import sourcemap from 'source-map-support';
+sourcemap.install();
 
 // express
 import express from 'express';
 
 // server render
 import { serverRender } from './server-render';
-
-sourcemap.install();
 
 const server = express();
 server.use(express.static('dev'));

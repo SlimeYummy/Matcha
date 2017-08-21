@@ -20,7 +20,7 @@ import createGenerateClassName from 'material-ui/styles/createGenerateClassName'
 import { blue, red } from 'material-ui/colors';
 
 // app
-import { App } from '../view/app';
+import App from '../view/app';
 import { GLOBAL_CSS } from '../styles-const';
 
 

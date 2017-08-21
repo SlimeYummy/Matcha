@@ -1,35 +1,33 @@
-// react
-import React, { Component } from 'react';
-// redux
-import { Provider } from 'react-redux';
-// react-router
-import { Route, Link } from 'react-router-dom';
-// material-ui
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { Provider } from 'react-redux';
+import { Route, Switch, Link } from 'react-router-dom';
 
-import FrameWork from '../view/framework';
+import FrameWork from './framework';
+import { HomePage } from './page';
 
-const About = React.createClass({
-  render() {
-    return <h3>About</h3>
-  }
-})
-
-const Inbox = React.createClass({
+export default class App extends Component {
   render() {
     return (
-      <div>
-        <h2>Inbox</h2>
-        {this.props.children || "Welcome to your Inbox"}
-      </div>
-    )
+      <Provider store={this.props.store}>
+        <FrameWork>
+          <Switch>
+            <Route path="/" exact component={HomePage} />
+            <Route path="/coding" exact component={HomePage} />
+            <Route path="/painting" exact component={HomePage} />
+            <Route path="/writing" exact component={HomePage} />
+            <Route path="/coding/:where" exact component={HomePage} />
+            <Route path="/painting/:where" exact component={HomePage} />
+            <Route path="/writing/:where" exact component={HomePage} />
+            <Route path="/about" exact component={HomePage} />
+          </Switch>
+        </FrameWork>
+      </Provider>
+    );
   }
-})
+};
 
-export const App = ({ store }) => {
-  return (
-    <Provider store={store}>
-      <Route path="/" component={FrameWork} />
-    </Provider>
-  );
-}
+App.propTypes = {
+  store: PropTypes.object.isRequired,
+};

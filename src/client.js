@@ -9,44 +9,47 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 
 import rootReducer from './reducer';
-import { App } from './view/app';
+import App from './view/app';
 
 
-injectTapEventPlugin();
+window.onload = () => {
+  injectTapEventPlugin();
 
-class Client extends Component {
-  componentDidMount() {
-    const jssStyles = document.getElementById('jss-server-side');
-    if (jssStyles && jssStyles.parentNode) {
-      jssStyles.parentNode.removeChild(jssStyles);
+  class Client extends Component {
+    componentDidMount() {
+      const jssStyles = document.getElementById('jss-server-side');
+      if (jssStyles && jssStyles.parentNode) {
+        jssStyles.parentNode.removeChild(jssStyles);
+      }
     }
-  }
 
-  render() {
-    return (
-      <MuiThemeProvider theme={this.props.theme}>
+    render() {
+      return (
         <BrowserRouter>
-          <App store={this.props.store} />
+          <MuiThemeProvider theme={this.props.theme}>
+            <App store={this.props.store} />
+          </MuiThemeProvider>
         </BrowserRouter>
-      </MuiThemeProvider>
-    );
-  }
-};
+      );
+    }
+  };
 
-const theme = createMuiTheme({
-  palette: createPalette({
-    primary: blue,
-    accent: red,
-    type: 'light',
-  }),
-});
+  const theme = createMuiTheme({
+    palette: createPalette({
+      primary: blue,
+      accent: red,
+      type: 'light',
+    }),
+  });
 
-const store = createStore(
-  rootReducer,
-  window.__INITIAL_STATE__ || undefined,
-  applyMiddleware(thunkMiddleware)
-);
+  const store = createStore(
+    rootReducer,
+    window.__INITIAL_STATE__ || undefined,
+    applyMiddleware(thunkMiddleware)
+  );
 
-render((
-  <Client store={store} theme={theme} />
-), document.getElementById('Matcha'));
+  render((
+    <Client store={store} theme={theme} />
+  ), document.getElementById('Matcha'));
+
+}

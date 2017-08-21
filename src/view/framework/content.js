@@ -8,9 +8,7 @@ function Content({
 }) {
   return (
     <div className={classes.align}>
-      <div className={classes.inner}>
-        {children}
-      </div>
+      {children}
     </div>
   );
 }
