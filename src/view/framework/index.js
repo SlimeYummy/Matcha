@@ -1,21 +1,21 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import { withStyles } from 'material-ui/styles';
 
-import Content from './content';
 import SideBar from './side-bar';
 import TitleBar from './title-bar';
-import { PreCoding, PrePainting } from '../preview';
+import styles from './framework-styles';
 
-export default function FrameWork({
-  children,
+function FrameWork({
+  classes, children,
 }) {
   return (
     <div>
       <TitleBar />
       <SideBar />
-      <Content>
+      <div className={classes.align}>
         {children}
-      </Content>
+      </div>
     </div>
   );
 }
@@ -23,3 +23,5 @@ export default function FrameWork({
 FrameWork.propTypes = {
   children: PropTypes.object.isRequired,
 };
+
+export default withStyles(styles)(FrameWork);
