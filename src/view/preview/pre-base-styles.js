@@ -4,7 +4,7 @@ export default {
   wrap: {
     display: 'flex',
     flexDirection: 'row',
-    minHeigth: `40vh`,
+    minHeight: `40vh`,
     margin: `${C.LINE_HEIGHT_4} 0`,
 
     '&:hover': {
