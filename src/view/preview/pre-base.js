@@ -47,14 +47,14 @@ class PreBase extends Component {
       >
         <div className={this._mergeStyles('meta')}>
           <div className={this._mergeStyles('title')}>{title}</div>
-          <div className={this._mergeStyles('author')}>
+          <span className={this._mergeStyles('author')}>
             <span className={this._mergeStyles('sign')} />
             {author}
-          </div>
-          <div className={this._mergeStyles('date')}>
+          </span>
+          <span className={this._mergeStyles('date')}>
             <span className={this._mergeStyles('sign')} />
             {date}
-          </div>
+          </span>
         </div>
         <div className={this._mergeStyles('content')}>
           {content}

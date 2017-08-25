@@ -1,4 +1,8 @@
+import { withStyles } from 'material-ui/styles';
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+
+import styles from './home-page-styles';
 import { PreCoding, PrePainting } from '../preview';
 
 const TEXT = (
@@ -9,10 +13,11 @@ const TEXT = (
   </div>
 );
 
-export class HomePage extends Component {
+class _HomePage extends Component {
   render() {
+    const { classes } = this.props;
     return (
-      <div>
+      <div className={classes.body}>
         <PreCoding
           title="WebGL 管线全流程及相关函数"
           author="NaNuNoo"
@@ -65,3 +70,9 @@ export class HomePage extends Component {
     );
   }
 };
+
+_HomePage.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+export const HomePage = withStyles(styles)(_HomePage);
