@@ -10,12 +10,14 @@ function FrameWork({
   classes, children,
 }) {
   return (
-    <div>
+    <div className={classes.wrap}>
       <TitleBar />
       <SideBar />
-      <div className={classes.align}>
+      <div className={classes.left} />
+      <div className={classes.center}>
         {children}
       </div>
+      <div className={classes.right} />
     </div>
   );
 }

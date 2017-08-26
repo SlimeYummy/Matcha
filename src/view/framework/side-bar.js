@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import Drawer from 'material-ui/Drawer';
 import IconButton from 'material-ui/IconButton';
 import List, { ListItem } from 'material-ui/List';
 import { withStyles } from 'material-ui/styles';
@@ -12,16 +11,10 @@ function SideBar({
   classes
 }) {
   return (
-    <Drawer
-      anchor="right"
-      docked={true}
-      open={true}
-      className={classes.wrap}
-      classes={{ paper: classes.wrapPaper }}
-    >
+    <div className={classes.wrap}>
       <LinkList classes={classes} />
       <IconList classes={classes} />
-    </Drawer>
+    </div>
   );
 }
 
@@ -33,7 +26,7 @@ function LinkList({
       <LinKItem classes={classes} text="Home" url="/" />
       <LinKItem classes={classes} text="Coding" url="/coding" />
       <LinKItem classes={classes} text="Painting" url="/painting" />
-      <LinKItem classes={classes} text="Demo" url="/demo" />
+      <LinKItem classes={classes} text="Writing" url="/writing" />
       <LinKItem classes={classes} text="About" url="/about" />
     </List>
   );

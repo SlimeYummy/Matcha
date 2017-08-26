@@ -1,10 +1,14 @@
 export default {
   wrap: {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    zIndex: '1200',
     display: 'flex',
     flexDirection: 'row',
-    zIndex: 1400,
-    height: 50,
-    boxShadow: 'none'
+    height: '50px',
+    width: '100%',
+    background: '#DDDDDD',
   },
 
   logo: {

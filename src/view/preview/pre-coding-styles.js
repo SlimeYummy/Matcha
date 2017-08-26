@@ -2,21 +2,20 @@ import * as C from '../../styles-const';
 
 export default {
   meta: {
-    color: '#ffffff',
-    background: '#444444',
-    //background: 'url(./a.jpg)',
+    color: '#444444',
   },
 
   sign: {
-    background: '#ffffff',
+    background: '#444444',
   },
 
   content: {
-    padding: `0 ${C.LINE_HEIGHT_1} 0 ${C.LINE_HEIGHT_0}`,
+    padding: `0 5% 5% 5%`,
     fontSize: C.FONT_SIZE_1,
+    overflow: 'hidden',
 
     '@global p': {
-      margin: `${C.LINE_HEIGHT_1} 0`,
+      paddingTop: C.LINE_HEIGHT_1,
     }
   },
 };

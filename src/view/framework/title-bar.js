@@ -10,13 +10,13 @@ function TitleBar({
   classes,
 }) {
   return (
-    <AppBar className={classes.wrap}>
+    <div className={classes.wrap}>
       <img className={classes.logo} src="./public/logo.svg" />
       <span className={classes.space} />
       <IconButton className={classes.menu}>
         <IconMenu />
       </IconButton>
-    </AppBar>
+    </div>
   );
 }
 
