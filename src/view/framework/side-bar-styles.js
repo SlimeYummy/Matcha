@@ -80,9 +80,15 @@ export default {
   },
 
   [`@media
-  (orientation: portrait) and (min-width: 699.5px),
-  (orientation: landscape) and (min-width: 799.5px)
+  (orientation: portrait) and (min-width: 699.5px) and (max-width: 1399.5px),
+  (orientation: landscape) and (min-width: 799.5px) and (max-width: 1399.5px)
   `]: {
+    wrap: {
+      width: C.SIDE_BAR_WIDTH,
+    }
+  },
+
+  '@media (min-width: 1399.5px)': {
     wrap: {
       width: C.SIDE_BAR_WIDTH,
     }

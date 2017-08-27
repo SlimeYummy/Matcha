@@ -9,6 +9,7 @@ const TEXT = (
   <div>
     <p>最近想把 FenQi.Engine 的渲染系统从原始的 WebGL 直接调用替换为材质系统。一来是方便合并 DrawCall，二来统一管理 WebGL 绘制状态，三来提供一个 JSON 的材质格式。</p>
     <p>为此，比照 WebGL reference card 把涉及绘制管线的每个函数都复习了一遍，整理成本文。</p>
+    <p>这个故事告诉我们，第三方软件存在的价值。如果Windows什么都做到的话，那Windows的价格肯定也是系统家现在所有软件加起来那么多。</p>
   </div>
 );
 

@@ -2,7 +2,6 @@ import * as C from '../../styles-const';
 
 export default {
   wrap: {
-    marginBottom: C.LINE_HEIGHT_1,
     '&:hover': {
       cursor: 'pointer',
     },
@@ -47,23 +46,26 @@ export default {
     width: '100%',
   },
 
-  '@media (max-width: 1023.5px)': {
+  '@media (max-width: 1099.5px)': {
     wrap: {
       width: '100%',
+      marginBottom: C.LINE_HEIGHT_1,
     }
   },
 
-  '@media (min-width: 1023.5px) and (max-width: 1439.5px)': {
+  '@media (min-width: 1099.5px) and (max-width: 1399.5px)': {
     wrap: {
       width: `calc(50% - ${C.LINE_HEIGHT * 0.5}rem)`,
-      height: `${C.LINE_HEIGHT * 16}rem`,
+      height: `${C.LINE_HEIGHT * 18}rem`,
+      marginBottom: C.LINE_HEIGHT_1,
     }
   },
 
-  '@media (min-width: 1439.5px) and (max-width: 1919.5px)': {
+  '@media (min-width: 1399.5px)': {
     wrap: {
-      width: `calc(33.3% - ${C.LINE_HEIGHT * 0.667}rem)`,
-      height: `${C.LINE_HEIGHT * 16}rem`,
+      width: `48%`,
+      height: `${C.LINE_HEIGHT * 17}rem`,
+      marginBottom: '4%',
     }
   }
 };

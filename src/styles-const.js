@@ -14,18 +14,29 @@ p {
   text-align: justify;
   text-justify: ideographic;
 }
-@media (max-width: 511px) { html { font-size: 12px; } }
-@media (max-width: 512px) and (max-width: 767px) { html { font-size: 13px; } }
-@media (min-width: 768px) and (max-width: 1280px) {
+@media (orientation: portrait) and (max-width: 359.5px),
+(orientation: landscape) and (max-width: 599.5px) {
+  html { font-size: 12px; }
+}
+@media (orientation: portrait) and (min-width: 359.5px) and (max-width: 699.5px),
+(orientation: landscape) and (min-width: 599.5px) and (max-width: 799.5px) {
+  html { font-size: 13px; }
+}
+@media (orientation: portrait) and (min-width: 699.5px) and (max-width: 899.5px),
+(orientation: landscape) and (min-width: 799.5px) and (max-width: 899.5px) {
   html { font-size: 14px; }
 }
-@media (min-width: 1280px) and (max-width: 1600px) {
+@media (min-width: 899.5px) and (max-width: 1399.5px) {
   html { font-size: 15px; }
 }
-@media (min-width: 1600px) {
+@media (min-width: 1399.5px) and (max-width: 1599.5px) {
   html { font-size: 16px; }
+}
+@media (min-width: 1599.5px) {
+  html { font-size: 17px; }
 }`;
 
+export const FONT_SIZE = 1.0;
 export const FONT_SIZE_0 = '0.707rem';
 export const FONT_SIZE_1 = '1.000rem';
 export const FONT_SIZE_1_5 = '1.2rem';

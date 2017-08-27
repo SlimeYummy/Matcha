@@ -15,7 +15,7 @@ export default {
     overflow: 'hidden',
 
     '@global p': {
-      paddingTop: C.LINE_HEIGHT_1,
+      paddingTop: `${C.LINE_HEIGHT * 0.5}rem`,
     }
   },
 };
