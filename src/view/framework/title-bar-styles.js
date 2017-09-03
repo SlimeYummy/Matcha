@@ -1,3 +1,5 @@
+import * as C from '../../styles-const';
+
 export default {
   wrap: {
     position: 'fixed',
@@ -8,10 +10,11 @@ export default {
     flexDirection: 'row',
     height: '50px',
     width: '100%',
-    background: '#DDDDDD',
+    background: C.COLOR_BK_1,
   },
 
   logo: {
+    color: C.COLOR_TEXT_1,
   },
 
   space: {
@@ -21,4 +24,8 @@ export default {
   menu: {
     marginRight: '24px',
   },
+
+  menuIcon: {
+    color: C.COLOR_TEXT_1,
+  }
 };

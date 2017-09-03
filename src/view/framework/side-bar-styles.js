@@ -10,7 +10,7 @@ export default {
     flexDirection: 'column',
     justifyContent: 'center',
     height: '100%',
-    background: '#DDDDDD',
+    background: C.COLOR_BK_1,
   },
 
   //
@@ -32,7 +32,7 @@ export default {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    color: 'black',
+    color: C.COLOR_TEXT_1,
     fontSize: C.FONT_SIZE_1_5,
     textDecoration: 'none',
   },
@@ -40,7 +40,7 @@ export default {
   linkSign: {
     width: '0.5em',
     height: '0.5em',
-    background: 'black',
+    background: C.COLOR_TEXT_1,
     marginRight: '1em',
   },
 
@@ -67,6 +67,7 @@ export default {
   iconIcon: {
     width: '1.8rem',
     height: '1.8rem',
+    color: C.COLOR_TEXT_1,
   },
 
   [`@media

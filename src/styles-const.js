@@ -52,3 +52,7 @@ export const LINE_HEIGHT_3 = '5.1rem';
 export const LINE_HEIGHT_4 = '6.8rem';
 
 export const SIDE_BAR_WIDTH = '13rem';
+
+export const COLOR_BK_1 = '#f4f1eb';
+export const COLOR_BK_2 = '#ffffff';
+export const COLOR_TEXT_1 = '#2c3955';

@@ -50,12 +50,16 @@ function IconList({
 }) {
   return (
     <div className={classes.iconList}>
-      <IconButton className={classes.iconButton}>
-        <IconGithub className={classes.iconIcon} />
-      </IconButton>
-      <IconButton className={classes.iconButton}>
-        <IconPixiv className={classes.iconIcon} />
-      </IconButton>
+      <a href="https://github.com/nanunoo">
+        <IconButton className={classes.iconButton}>
+          <IconGithub className={classes.iconIcon} />
+        </IconButton>
+      </a>
+      <a href="https://pixiv.me/user_gxww5525">
+        <IconButton className={classes.iconButton}>
+          <IconPixiv className={classes.iconIcon} />
+        </IconButton>
+      </a>
       <IconButton className={classes.iconButton}>
         <IconEmail className={classes.iconIcon} />
       </IconButton>

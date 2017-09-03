@@ -39,7 +39,7 @@ class PreBase extends Component {
   render() {
     const { title, author, date, content } = this.props;
     return (
-      <Paper
+      <div
         className={this._mergeStyles('wrap')}
         elevation={this.state.isHover ? 6 : 2}
         onMouseEnter={this.onEnter}
@@ -59,7 +59,7 @@ class PreBase extends Component {
         <div className={this._mergeStyles('content')}>
           {content}
         </div>
-      </Paper>
+      </div>
     );
   }
 };

@@ -6,6 +6,7 @@ export default {
     flexDriection: 'row',
     marginTop: '70px',
     marginBottom: '200px',
+    background: C.COLOR_BK_2,
   },
 
   [`@media

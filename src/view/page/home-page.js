@@ -25,13 +25,13 @@ class _HomePage extends Component {
           content={TEXT}
         />
         <PreCoding
-          title="WebGL 管线全流程及相关函数"
+          title="WebGL 管线"
           author="NaNuNoo"
           date="2016-11-13"
           content={TEXT}
         />
         <PreCoding
-          title="WebGL 管线全流程及相关函数"
+          title="函数"
           author="NaNuNoo"
           date="2016-11-13"
           content={TEXT}
@@ -43,25 +43,25 @@ class _HomePage extends Component {
           url="./pic.jpg"
         />
         <PreCoding
-          title="WebGL 管线全流程及相关函数"
+          title="WebGL 管线"
           author="NaNuNoo"
           date="2016-11-13"
           content={TEXT}
         />
         <PrePainting
-          title="WebGL 管线全流程及相关函数"
+          title="数"
           author="NaNuNoo"
           date="2016-11-13"
           url="./b.jpg"
         />
         <PrePainting
-          title="WebGL 管线全流程及相关函数"
+          title="WebGL 管线全流程"
           author="NaNuNoo"
           date="2016-11-13"
           url="./2.jpg"
         />
         <PrePainting
-          title="WebGL 管线全流程及相关函数"
+          title="WebGL"
           author="NaNuNoo"
           date="2016-11-13"
           url="./c.jpg"

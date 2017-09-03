@@ -2,12 +2,11 @@ import * as C from '../../styles-const';
 
 export default {
   meta: {
-    color: '#444444',
-    background: '#ffffff',
+    color: C.COLOR_TEXT_1,
   },
 
   sign: {
-    background: '#444444',
+    background: C.COLOR_TEXT_1,
   },
 
   img: {

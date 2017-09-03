@@ -7,17 +7,21 @@ export default {
     },
     '&:active': {
       cursor: 'pointer',
-    }
+    },
+    padding: C.LINE_HEIGHT_1,
+    color: C.COLOR_TEXT_1,
   },
 
   meta: {
     width: '100%',
-    padding: `5% 5% 0 5%`,
+    padding: `${0.5 * C.LINE_HEIGHT}rem ${0.75 * C.LINE_HEIGHT}rem`,
+    background: C.COLOR_BK_1,
   },
 
   title: {
     lineHeight: '1.25',
     fontSize: C.FONT_SIZE_3,
+    paddingBottom: `${0.5 * C.LINE_HEIGHT}rem`,
   },
 
   author: {
@@ -25,7 +29,7 @@ export default {
     flexDirection: 'row',
     alignItems: 'center',
     fontSize: C.FONT_SIZE_1,
-    marginRight: C.LINE_HEIGHT_1,
+    paddingRight: C.LINE_HEIGHT_1,
   },
 
   date: {
@@ -33,7 +37,7 @@ export default {
     flexDirection: 'row',
     alignItems: 'center',
     fontSize: C.FONT_SIZE_1,
-    marginRight: C.LINE_HEIGHT_1,
+    paddingRight: C.LINE_HEIGHT_1,
   },
 
   sign: {
@@ -44,6 +48,7 @@ export default {
 
   content: {
     width: '100%',
+    paddingTop: `${0.5 * C.LINE_HEIGHT}rem`,
   },
 
   '@media (max-width: 1099.5px)': {
@@ -63,7 +68,7 @@ export default {
 
   '@media (min-width: 1399.5px)': {
     wrap: {
-      width: `48%`,
+      width: `48% `,
       height: `${C.LINE_HEIGHT * 17}rem`,
       marginBottom: '4%',
     }
