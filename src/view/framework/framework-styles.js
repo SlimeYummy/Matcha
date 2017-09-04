@@ -18,8 +18,8 @@ export default {
     right: { flex: '1 1 auto' },
     center: {
       width: '85%',
-      minWidth: '300px',
-      maxWidth: '560px',
+      minWidth: '280px',
+      maxWidth: '540px',
     }
   },
 
@@ -37,25 +37,13 @@ export default {
     }
   },
 
-  '@media (min-width: 1099.5px) and (max-width: 1399.5px)': {
+  '@media (min-width: 1099.5px)': {
     wrap: { width: `calc(100% - ${C.SIDE_BAR_WIDTH})` },
     left: { flex: '3 3 auto' },
     right: { flex: '2 2 auto' },
     center: {
-      width: '85%',
-      minWidth: '800px',
-      maxWidth: '1000px',
-    }
-  },
-
-  '@media (min-width: 1399.5px)': {
-    wrap: { width: `calc(100% - ${C.SIDE_BAR_WIDTH})` },
-    left: { flex: '3 3 auto' },
-    right: { flex: '2 2 auto' },
-    center: {
-      width: '78%',
-      minWidth: '1000px',
-      maxWidth: '1300px',
+      width: 'calc(300px + 50%)',
+      minWidth: '750px',
     }
   },
 };

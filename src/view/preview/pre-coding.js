@@ -8,12 +8,18 @@ import styles from './pre-coding-styles';
 function _PreCoding({
   classes, title, author, date, content
 }) {
+  const newContent = (
+    <div>
+      {content}
+      <span>Read More>></span>
+    </div>
+  );
   return (
     <PreBase
       title={title}
       author={author}
       date={date}
-      content={content}
+      content={newContent}
       extraClasses={classes}
     />
   );

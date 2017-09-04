@@ -26,14 +26,17 @@ p {
 (orientation: landscape) and (min-width: 799.5px) and (max-width: 899.5px) {
   html { font-size: 14px; }
 }
-@media (min-width: 899.5px) and (max-width: 1399.5px) {
+@media (min-width: 899.5px) and (max-width: 1199.5px) {
   html { font-size: 15px; }
 }
-@media (min-width: 1399.5px) and (max-width: 1599.5px) {
+@media (min-width: 1199.5px) and (max-width: 1499.5px) {
   html { font-size: 16px; }
 }
-@media (min-width: 1599.5px) {
+@media (min-width: 1499.5px) and (max-width: 1799.5px) {
   html { font-size: 17px; }
+}
+@media (min-width: 1799.5px) {
+  html { font-size: 18px; }
 }`;
 
 export const FONT_SIZE = 1.0;

@@ -2,18 +2,20 @@ import * as C from '../../styles-const';
 
 export default {
   wrap: {
+    width: '100%',
+    color: C.COLOR_TEXT_1,
+    marginBottom: C.LINE_HEIGHT_2,
+
     '&:hover': {
       cursor: 'pointer',
     },
+
     '&:active': {
       cursor: 'pointer',
     },
-    padding: C.LINE_HEIGHT_1,
-    color: C.COLOR_TEXT_1,
   },
 
   meta: {
-    width: '100%',
     padding: `${0.5 * C.LINE_HEIGHT}rem ${0.75 * C.LINE_HEIGHT}rem`,
     background: C.COLOR_BK_1,
   },
@@ -21,7 +23,6 @@ export default {
   title: {
     lineHeight: '1.25',
     fontSize: C.FONT_SIZE_3,
-    paddingBottom: `${0.5 * C.LINE_HEIGHT}rem`,
   },
 
   author: {
@@ -30,6 +31,7 @@ export default {
     alignItems: 'center',
     fontSize: C.FONT_SIZE_1,
     paddingRight: C.LINE_HEIGHT_1,
+    paddingTop: `${0.5 * C.LINE_HEIGHT}rem`,
   },
 
   date: {
@@ -38,39 +40,46 @@ export default {
     alignItems: 'center',
     fontSize: C.FONT_SIZE_1,
     paddingRight: C.LINE_HEIGHT_1,
+    paddingTop: `${0.5 * C.LINE_HEIGHT}rem`,
   },
 
   sign: {
     width: '0.6em',
     height: '0.6em',
     marginRight: '0.5em',
+    background: C.COLOR_TEXT_1,
   },
 
   content: {
-    width: '100%',
-    paddingTop: `${0.5 * C.LINE_HEIGHT}rem`,
+    background: '#fff',
   },
 
   '@media (max-width: 1099.5px)': {
-    wrap: {
+    meta: {
       width: '100%',
-      marginBottom: C.LINE_HEIGHT_1,
-    }
+    },
+
+    content: {
+      width: '100%',
+      paddingTop: `${0.5 * C.LINE_HEIGHT}rem`,
+    },
   },
 
-  '@media (min-width: 1099.5px) and (max-width: 1399.5px)': {
+  '@media (min-width: 1099.5px)': {
     wrap: {
-      width: `calc(50% - ${C.LINE_HEIGHT * 0.5}rem)`,
-      height: `${C.LINE_HEIGHT * 18}rem`,
-      marginBottom: C.LINE_HEIGHT_1,
-    }
-  },
+      display: 'flex',
+      flexDirection: 'row',
+    },
 
-  '@media (min-width: 1399.5px)': {
-    wrap: {
-      width: `48% `,
-      height: `${C.LINE_HEIGHT * 17}rem`,
-      marginBottom: '4%',
-    }
-  }
+    meta: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '36%',
+    },
+
+    content: {
+      width: '64%',
+      paddingLeft: `${0.5 * C.LINE_HEIGHT}rem`,
+    },
+  },
 };
