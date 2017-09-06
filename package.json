@@ -44,6 +44,7 @@
     "bluebird": "^3.5.0",
     "express": "^4.15.4",
     "js-yaml": "^3.9.1",
+    "markdown-it": "^8.4.0",
     "material-ui": "^1.0.0-beta.5",
     "postcss-cssnext": "^3.0.2",
     "prop-types": "^15.5.10",

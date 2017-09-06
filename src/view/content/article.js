@@ -5,10 +5,6 @@ import React, { Component } from 'react';
 import styles from './pre-base-styles';
 
 class _Article {
-  componentWillMount() {
-
-  }
-
   render() {
     const { classes, data } = this.props;
     return (
