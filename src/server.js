@@ -1,13 +1,10 @@
-import sourcemap from 'source-map-support';
-sourcemap.install();
-import * as C from './config';
-
-// express
 import express from 'express';
+import sourcemap from 'source-map-support';
 
-// server render
-import { serverRender } from './server-render';
-import repository from './server-render/repository';
+import * as C from './config';
+import { pageRenderer, contentRenderer } from './renderer';
+
+sourcemap.install();
 
 const server = express();
 
@@ -16,21 +13,24 @@ server.use('/', express.static('./dev'));
 // user resource
 server.use('/', express.static(C.REPOSITORY));
 
-server.get('/', (req, res) => {
-  const html = serverRender(req.url);
-  res.send(html);
+server.get('/', async (req, res) => {
+  try {
+    const html = await pageRenderer.renderer();
+    res.send(html);
+  } catch (err) {
+    console.log(err);
+    res.status(500).end();
+  }
 });
 
-server.get('/_/*', (req, res) => {
-  (async () => {
-    try {
-      const data = await repository(req.path.slice(2));
-      res.json(data);
-    } catch (err) {
-      console.log(err);
-      res.status(500).end();
-    }
-  })();
+server.get('/_/*', async (req, res) => {
+  try {
+    const data = await contentRenderer.renderer();
+    res.send(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).end();
+  }
 });
 
 server.listen(3000, () => {
