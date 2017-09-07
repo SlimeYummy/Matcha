@@ -9,9 +9,8 @@ import React from 'react';
 import { JssProvider, SheetsRegistry } from 'react-jss';
 import { Provider } from 'react-redux';
 import { StaticRouter } from 'react-router';
-import { createStore } from 'redux';
 
-import rootReducer from '../reducer';
+import newStore from '../reducer';
 import { GLOBAL_CSS } from '../styles-const';
 import App from '../view/app';
 
@@ -39,7 +38,7 @@ export default class PageRenderer {
 
   async renderer(url) {
     const context = {};
-    const store = createStore(rootReducer);
+    const store = newStore();
 
     const theme = createMuiTheme({
       palette: createPalette({
@@ -67,6 +66,6 @@ export default class PageRenderer {
     if (context.url) {
       return null;
     }
-    return this._htmlTemplate(html, css);
+    return this._htmlTemplate(html, css, store.getState());
   }
 }

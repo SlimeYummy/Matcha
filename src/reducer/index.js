@@ -1,7 +1,14 @@
-import { combineReducers } from 'redux';
+import { applyMiddleware, createStore, combineReducers } from 'redux';
+import thunk from 'redux-thunk';
+import content from './content';
 
-export default combineReducers({
-  func: function history(state = {}, action) {
-    return state;
-  }
+const rootReducer = combineReducers({
+  content,
 });
+
+export default function newStore() {
+  return createStore(
+    rootReducer,
+    applyMiddleware(thunk)
+  );
+}
