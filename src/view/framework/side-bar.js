@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import IconButton from 'material-ui/IconButton';
 import List, { ListItem } from 'material-ui/List';
 import { withStyles } from 'material-ui/styles';
-import { Link } from 'react-router-dom';
 
 import { IconEmail, IconGithub, IconPixiv } from '../../icon';
+import { Link } from '../route';
 import styles from './side-bar-styles.js';
 
 function SideBar({

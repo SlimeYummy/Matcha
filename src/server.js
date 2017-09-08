@@ -15,7 +15,7 @@ server.use('/', express.static(C.REPOSITORY));
 
 server.get('/', async (req, res) => {
   try {
-    const html = await pageRenderer.renderer();
+    const html = await pageRenderer.renderer(req.originalUrl);
     res.send(html);
   } catch (err) {
     console.log(err);

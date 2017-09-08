@@ -3,7 +3,6 @@ import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
 import createPalette from 'material-ui/styles/palette';
 import React, { Component } from 'react';
 import { render } from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
@@ -25,11 +24,9 @@ window.onload = () => {
 
     render() {
       return (
-        <BrowserRouter>
-          <MuiThemeProvider theme={this.props.theme}>
-            <App store={this.props.store} />
-          </MuiThemeProvider>
-        </BrowserRouter>
+        <MuiThemeProvider theme={this.props.theme}>
+          <App store={this.props.store} />
+        </MuiThemeProvider>
       );
     }
   };

@@ -8,13 +8,45 @@ import { renderToString } from 'react-dom/server';
 import React from 'react';
 import { JssProvider, SheetsRegistry } from 'react-jss';
 import { Provider } from 'react-redux';
-import { StaticRouter } from 'react-router';
 
+import { fetchContent, discardContent } from '../action/content';
+import { changeLocation } from '../action/location';
 import newStore from '../reducer';
 import { GLOBAL_CSS } from '../styles-const';
 import App from '../view/app';
 
 export default class PageRenderer {
+
+  async renderer(path) {
+    const store = newStore();
+    store.dispatch(changeLocation(path));
+    // await store.dispatch(fetchContent(reqPath));
+
+    const theme = createMuiTheme({
+      palette: createPalette({
+        primary: blue,
+        accent: red,
+        type: 'light',
+      }),
+    });
+
+    const sheetsRegistry = new SheetsRegistry();
+    const jss = create(preset());
+    jss.options.createGenerateClassName = createGenerateClassName;
+
+    const html = renderToString(
+      <JssProvider registry={sheetsRegistry} jss={jss}>
+        <MuiThemeProvider theme={theme} sheetsManager={new Map()}>
+          <App store={store} />
+        </MuiThemeProvider>
+      </JssProvider>
+    );
+    const css = sheetsRegistry.toString()
+
+    // store.dispatch(discardContent());
+    return this._htmlTemplate(html, css, store.getState());
+  }
+
   _htmlTemplate(html, css, initialState) {
     return `<!DOCTYPE html>
 <html lang="en">
@@ -34,38 +66,5 @@ export default class PageRenderer {
 <script src="/client.js"></script>
 </body>
 </html>`;
-  }
-
-  async renderer(url) {
-    const context = {};
-    const store = newStore();
-
-    const theme = createMuiTheme({
-      palette: createPalette({
-        primary: blue,
-        accent: red,
-        type: 'light',
-      }),
-    });
-
-    const sheetsRegistry = new SheetsRegistry();
-    const jss = create(preset());
-    jss.options.createGenerateClassName = createGenerateClassName;
-
-    const html = renderToString(
-      <JssProvider registry={sheetsRegistry} jss={jss}>
-        <MuiThemeProvider theme={theme} sheetsManager={new Map()}>
-          <StaticRouter location={url} context={context}>
-            <App store={store} />
-          </StaticRouter>
-        </MuiThemeProvider>
-      </JssProvider>
-    );
-    const css = sheetsRegistry.toString()
-
-    if (context.url) {
-      return null;
-    }
-    return this._htmlTemplate(html, css, store.getState());
   }
 }
