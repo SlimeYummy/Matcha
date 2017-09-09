@@ -2,7 +2,6 @@ import {
   FETCH_DATA_REQUEST,
   FETCH_DATA_SUCCESS,
   FETCH_DATA_FAILURE,
-  DISCARD_DATA,
 } from '../event.js';
 
 export default function data(state = {
@@ -25,11 +24,6 @@ export default function data(state = {
       return {
         state: 'failure',
         error: action.error,
-      };
-    case DISCARD_DATA:
-      return {
-        state: 'discard',
-        data: null,
       };
     default:
       return state;

@@ -41,13 +41,13 @@
     "webpack": "^3.5.5"
   },
   "dependencies": {
+    "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.0",
     "express": "^4.15.4",
     "js-yaml": "^3.9.1",
     "markdown-it": "^8.4.0",
     "material-ui": "^1.0.0-beta.5",
     "node-fetch": "^1.7.3",
-    "postcss-cssnext": "^3.0.2",
     "prop-types": "^15.5.10",
     "react-redux": "^5.0.6",
     "react-tap-event-plugin": "^2.0.1",

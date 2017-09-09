@@ -9,7 +9,7 @@ import React from 'react';
 import { JssProvider, SheetsRegistry } from 'react-jss';
 import { Provider } from 'react-redux';
 
-import { fetchData, discardData } from '../action/data';
+import { fetchData } from '../action/data';
 import { changeRoute } from '../action/route';
 import newStore from '../reducer';
 import { GLOBAL_CSS } from '../styles-const';
@@ -42,7 +42,6 @@ export default class PageRenderer {
     );
     const css = sheetsRegistry.toString()
 
-    store.dispatch(discardData());
     return this._htmlTemplate(html, css, store.getState());
   }
 

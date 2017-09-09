@@ -2,7 +2,6 @@ import {
   FETCH_DATA_REQUEST,
   FETCH_DATA_SUCCESS,
   FETCH_DATA_FAILURE,
-  DISCARD_DATA,
 } from '../event';
 
 function fetchDataRequest() {
@@ -45,10 +44,4 @@ export function fetchData(path) {
       console.log(err);
     }
   };
-}
-
-export function discardData() {
-  return {
-    type: DISCARD_DATA,
-  }
 }

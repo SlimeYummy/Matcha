@@ -11,6 +11,7 @@ function renderItems(items) {
     if (item.html) {
       return (
         <PreCoding
+          key={item.title}
           title={item.title}
           author={item.author}
           date={item.date}
@@ -21,6 +22,7 @@ function renderItems(items) {
     } else if (preview.image) {
       return (
         <PrePainting
+          key={item.title}
           title={item.title}
           author={item.author}
           date={item.date}
@@ -31,6 +33,7 @@ function renderItems(items) {
     } else {
       return (
         <PreCoding
+          key={item.title}
           title={item.title}
           author={item.author}
           date={item.date}

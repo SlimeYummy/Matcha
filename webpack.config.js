@@ -5,7 +5,7 @@ const resolve = {
 const babelRule = {
   test: /\.js|jsx$/,
   loader: 'babel-loader',
-  exclude: '/node_modules/*',
+  exclude: /node_modules/,
 };
 
 const jsonRule = {
@@ -27,8 +27,9 @@ const client = {
       Object.assign({
         query: {
           babelrc: false,
-          presets: ['es2015', 'react'],
+          presets: [['es2015', { modules: false }], 'react'],
           plugins: [
+            'transform-runtime',
             'syntax-decorators',
             'syntax-object-rest-spread',
             'transform-async-to-generator',
@@ -37,7 +38,6 @@ const client = {
             'transform-object-assign',
             'transform-object-rest-spread',
             'transform-object-set-prototype-of-to-assign',
-            //['transform-runtime', { helpers: true, polyfill: true, regenerator: true, }],
           ],
         },
       }, babelRule),
@@ -68,7 +68,6 @@ const server = {
             'transform-async-to-generator',
             'transform-decorators-legacy',
             'transform-object-rest-spread',
-            //['transform-runtime', { helpers: true, polyfill: true, regenerator: true, }],
           ],
         },
       }, babelRule),

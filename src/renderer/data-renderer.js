@@ -23,6 +23,7 @@ export default class DataRenderer {
     }
 
     const data = await subRenderer.render(yamlObj, realPath);
+    data.path = normPath;
     return data;
   }
 };

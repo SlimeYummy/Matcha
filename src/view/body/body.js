@@ -10,16 +10,13 @@ import Content from '../content';
 
 class _Body extends Component {
   componentDidMount() {
-    const { path } = this.props.route;
-    this.props.fetchData(`/data${path}`);
-  }
-
-  shouldComponentUpdate(nextProps) {
-    return nextProps.data.state !== 'discard';
+    const { route, data } = this.props;
+    if (route.path !== data.data.path) {
+      this.props.fetchData(`/data${path}`);
+    }
   }
 
   render() {
-    console.log(this.props);
     const { data } = this.props.data;
     if (data.type === 'catalog') {
       return <Catalog data={data} />;
@@ -36,7 +33,6 @@ _Body.propTypes = {
 };
 
 function mapStateToProps(state) {
-  console.log(state);
   return {
     route: state.route,
     data: state.data,
