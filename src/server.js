@@ -1,32 +1,35 @@
 import express from 'express';
 import sourcemap from 'source-map-support';
 
-import * as C from './config';
-import { pageRenderer, contentRenderer } from './renderer';
-
 sourcemap.install();
+global.fetch = fetch;
+
+import * as C from './config';
+import './fetch/fetch-node';
+import { pageRenderer, contentRenderer } from './renderer';
 
 const server = express();
 
 // app resource
 server.use('/', express.static('./dev'));
 // user resource
-server.use('/', express.static(C.REPOSITORY));
+server.use('/', express.static(C.DATA_PATH));
 
-server.get('/', async (req, res) => {
+server.get('/data/*', async (req, res) => {
   try {
-    const html = await pageRenderer.renderer(req.originalUrl);
-    res.send(html);
+    const urlPath = req.originalUrl.slice(5);
+    const data = await contentRenderer.render(urlPath);
+    res.send(data);
   } catch (err) {
     console.log(err);
     res.status(500).end();
   }
 });
 
-server.get('/_/*', async (req, res) => {
+server.get('/*', async (req, res) => {
   try {
-    const data = await contentRenderer.renderer();
-    res.send(data);
+    const html = await pageRenderer.render(req.originalUrl);
+    res.send(html);
   } catch (err) {
     console.log(err);
     res.status(500).end();

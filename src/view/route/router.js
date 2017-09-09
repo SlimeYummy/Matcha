@@ -2,7 +2,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { changeLocation } from '../../action/location';
+
+import { changeRoute } from '../../action/route';
 
 class _Router extends Component {
   constructor(props) {
@@ -15,7 +16,7 @@ class _Router extends Component {
   }
 
   onPopState() {
-    this.props.changeLocation(location.pathname);
+    this.props.changeRoute(location.pathname);
   }
 
   render() {
@@ -25,12 +26,12 @@ class _Router extends Component {
 
 _Router.propTypes = {
   children: PropTypes.node.isRequired,
-  changeLocation: PropTypes.func.isRequired,
+  changeRoute: PropTypes.func.isRequired,
 };
 
 function mapDispatchToProps(dispatch) {
   return {
-    changeLocation: bindActionCreators(changeLocation, dispatch),
+    changeRoute: bindActionCreators(changeRoute, dispatch),
   };
 }
 

@@ -23,3 +23,15 @@ export function writeFile(path, data) {
     });
   });
 }
+
+export function stat(path) {
+  return new Promise((resolve, reject) => {
+    fs.stat(path, (err, stats) => {
+      if (err) {
+        return reject(err);
+      } else {
+        return resolve(stats);
+      }
+    });
+  });
+}

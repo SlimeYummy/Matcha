@@ -1,11 +1,11 @@
 import { applyMiddleware, createStore, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
-import content from './content';
-import location from './location';
+import data from './data';
+import route from './route';
 
 const rootReducer = combineReducers({
-  content,
-  location,
+  data,
+  route,
 });
 
 export default function newStore() {

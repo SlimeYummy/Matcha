@@ -20,6 +20,7 @@ const client = {
     filename: 'client.js',
   },
   target: 'web',
+  devtool: 'source-map',
   resolve,
   module: {
     rules: [
@@ -52,6 +53,7 @@ const server = {
     filename: 'server.js',
   },
   target: 'node',
+  devtool: 'source-map',
   resolve,
   module: {
     rules: [

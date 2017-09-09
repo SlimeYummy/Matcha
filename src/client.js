@@ -7,6 +7,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 
+import './fetch/fetch-web';
 import rootReducer from './reducer';
 import App from './view/app';
 

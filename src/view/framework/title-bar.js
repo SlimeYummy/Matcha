@@ -11,7 +11,7 @@ function TitleBar({
 }) {
   return (
     <div className={classes.wrap}>
-      <img className={classes.logo} src="./public/logo.svg" />
+      <img className={classes.logo} src="/public/logo.svg" />
       <span className={classes.space} />
       <IconButton className={classes.menu}>
         <IconMenu className={classes.menuIcon} />

@@ -1,7 +1,7 @@
 import markdownIt from 'markdown-it';
 import { readFile } from './file';
 
-export default class MarkdownRenderer {
+export default class MdRenderer {
   constructor() {
     this._markdown = markdownIt({
       html: true,
@@ -11,7 +11,7 @@ export default class MarkdownRenderer {
 
   async render(yamlObj, path) {
     const contentFile = yamlObj.content || 'content.md';
-    const mdText = await readFile(`${localPath}${contentFile}`, 'utf8');
+    const mdText = await readFile(`${path}/${contentFile}`, 'utf8');
     const htmlText = this._markdown.render(mdText);
     return {
       title: yamlObj.title,

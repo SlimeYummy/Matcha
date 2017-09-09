@@ -1,12 +1,12 @@
 import {
-  CHANGE_LOCATION,
+  CHANGE_ROUTE,
 } from '../event.js';
 
-export default function content(state = {
+export default function route(state = {
   path: '',
 }, action) {
   switch (action.type) {
-    case CHANGE_LOCATION:
+    case CHANGE_ROUTE:
       return {
         path: action.path,
       };

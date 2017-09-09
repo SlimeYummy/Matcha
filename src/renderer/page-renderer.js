@@ -9,18 +9,17 @@ import React from 'react';
 import { JssProvider, SheetsRegistry } from 'react-jss';
 import { Provider } from 'react-redux';
 
-import { fetchContent, discardContent } from '../action/content';
-import { changeLocation } from '../action/location';
+import { fetchData, discardData } from '../action/data';
+import { changeRoute } from '../action/route';
 import newStore from '../reducer';
 import { GLOBAL_CSS } from '../styles-const';
 import App from '../view/app';
 
 export default class PageRenderer {
-
-  async renderer(path) {
+  async render(normPath) {
     const store = newStore();
-    store.dispatch(changeLocation(path));
-    // await store.dispatch(fetchContent(reqPath));
+    store.dispatch(changeRoute(normPath));
+    await store.dispatch(fetchData(`/data${normPath}`));
 
     const theme = createMuiTheme({
       palette: createPalette({
@@ -43,7 +42,7 @@ export default class PageRenderer {
     );
     const css = sheetsRegistry.toString()
 
-    // store.dispatch(discardContent());
+    store.dispatch(discardData());
     return this._htmlTemplate(html, css, store.getState());
   }
 
