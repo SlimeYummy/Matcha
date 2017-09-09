@@ -11,7 +11,7 @@ export default class CacheManager {
 
   async render(rawPath) {
     const normPath = path.posix.normalize(`/${rawPath}/`);
-    if (normPath === '/' || normPath[0] !== '/') {
+    if (rawPath !== '/' && (normPath === '/' || normPath[0] !== '/')) {
       throw new Error(`Invaild path - ${rawPath}`);
     }
 

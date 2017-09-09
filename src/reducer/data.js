@@ -7,10 +7,7 @@ import {
 
 export default function data(state = {
   status: 'init',
-  title: '',
-  author: '',
-  date: '',
-  html: '',
+  data: null,
   error: '',
 }, action) {
   switch (action.type) {
@@ -22,10 +19,7 @@ export default function data(state = {
     case FETCH_DATA_SUCCESS:
       return {
         state: 'success',
-        title: action.title,
-        author: action.author,
-        date: action.date,
-        html: action.html,
+        data: action.data,
       };
     case FETCH_DATA_FAILURE:
       return {
@@ -35,11 +29,7 @@ export default function data(state = {
     case DISCARD_DATA:
       return {
         state: 'discard',
-        title: '',
-        author: '',
-        date: '',
-        html: '',
-        error: '',
+        data: null,
       };
     default:
       return state;

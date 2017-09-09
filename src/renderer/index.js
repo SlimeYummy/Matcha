@@ -1,6 +1,7 @@
 import * as C from '../config';
 import CacheManager from './cache-manager';
-import DataRenderer from './data-renderer';
+import CatalogRenderer from './catalog-renderer';
+import DataRender from './data-renderer';
 import PageRenderer from './page-renderer';
 import MdRenderer from './md-renderer';
 
@@ -8,9 +9,10 @@ export const pageRenderer = new CacheManager(
   new PageRenderer()
 );
 
-export const contentRenderer = new CacheManager(
-  new DataRenderer({
-    'markdown': new MdRenderer(),
-  })
+export const dataRenderer = new CacheManager(
+  new DataRender({
+    'catalog': new CatalogRenderer(),
+    'content-md': new MdRenderer(),
+  }),
 );
 

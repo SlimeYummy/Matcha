@@ -4,11 +4,10 @@ import createPalette from 'material-ui/styles/palette';
 import React, { Component } from 'react';
 import { render } from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 
 import './fetch/fetch-web';
-import rootReducer from './reducer';
+import newStore from './reducer';
 import App from './view/app';
 
 
@@ -40,11 +39,7 @@ window.onload = () => {
     }),
   });
 
-  const store = createStore(
-    rootReducer,
-    window.__INITIAL_STATE__ || undefined,
-    applyMiddleware(thunkMiddleware)
-  );
+  const store = newStore(window.__INITIAL_STATE__);
 
   render((
     <Client store={store} theme={theme} />

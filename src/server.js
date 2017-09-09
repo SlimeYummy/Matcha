@@ -6,7 +6,7 @@ global.fetch = fetch;
 
 import * as C from './config';
 import './fetch/fetch-node';
-import { pageRenderer, contentRenderer } from './renderer';
+import { pageRenderer, dataRenderer } from './renderer';
 
 const server = express();
 
@@ -18,7 +18,7 @@ server.use('/', express.static(C.DATA_PATH));
 server.get('/data/*', async (req, res) => {
   try {
     const urlPath = req.originalUrl.slice(5);
-    const data = await contentRenderer.render(urlPath);
+    const data = await dataRenderer.render(urlPath);
     res.send(data);
   } catch (err) {
     console.log(err);

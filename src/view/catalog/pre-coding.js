@@ -10,7 +10,7 @@ function _PreCoding({
 }) {
   const newContent = (
     <div>
-      {content}
+      <div dangerouslySetInnerHTML={{ __html: content }} />
       <span>Read More>></span>
     </div>
   );
@@ -29,7 +29,7 @@ _PreCoding.propsType = {
   title: PropTypes.string.isRequired,
   author: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
-  content: PropTypes.node.isRequired,
+  content: PropTypes.string.isRequired,
 };
 
 export const PreCoding = withStyles(styles)(_PreCoding);

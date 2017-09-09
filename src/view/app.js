@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 
+import Body from './body';
 import FrameWork from './framework';
-import { HomePage } from './page';
-import { Data } from './data';
 import { Router } from './route';
 
 export default class App extends Component {
@@ -14,7 +13,7 @@ export default class App extends Component {
       <Provider store={this.props.store}>
         <FrameWork>
           <Router>
-            <Data />
+            <Body />
           </Router>
         </FrameWork>
       </Provider>

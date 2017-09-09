@@ -14,6 +14,7 @@ export default class MdRenderer {
     const mdText = await readFile(`${path}/${contentFile}`, 'utf8');
     const htmlText = this._markdown.render(mdText);
     return {
+      type: yamlObj.type,
       title: yamlObj.title,
       author: yamlObj.author,
       date: yamlObj.date,

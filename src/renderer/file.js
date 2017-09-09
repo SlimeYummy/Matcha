@@ -35,3 +35,15 @@ export function stat(path) {
     });
   });
 }
+
+export function readdir(path) {
+  return new Promise((resolve, reject) => {
+    fs.readdir(path, (err, nameArray) => {
+      if (err) {
+        return reject(err);
+      } else {
+        return resolve(nameArray);
+      }
+    });
+  });
+}

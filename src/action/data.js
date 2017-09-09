@@ -14,10 +14,7 @@ function fetchDataRequest() {
 function fetchDataSuccess(data) {
   return {
     type: FETCH_DATA_SUCCESS,
-    title: data.title,
-    author: data.author,
-    date: data.date,
-    html: data.html,
+    data,
   }
 }
 
