@@ -2,6 +2,7 @@ export const GLOBAL_CSS = `
 html {
   box-sizing: border-box;
   line-height: 1.7;
+  min-height: 150%;
 }
 *, *:before, *:after {
   box-sizing: inherit;

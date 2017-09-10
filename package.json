@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "webpack && node ./dev/server.js",
-    "build": "webpack"
+    "build": "webpack",
+    "deploy": "npm install && webpack --env.prod"
   },
   "repository": {
     "type": "git",
@@ -38,12 +39,14 @@
     "babel-preset-react": "^6.16.0",
     "react": "^15.0.2",
     "react-dom": "^15.0.2",
+    "uglifyjs-webpack-plugin": "^0.4.6",
     "webpack": "^3.5.5"
   },
   "dependencies": {
     "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.0",
     "express": "^4.15.4",
+    "glob": "^7.1.2",
     "js-yaml": "^3.9.1",
     "markdown-it": "^8.4.0",
     "material-ui": "^1.0.0-beta.5",

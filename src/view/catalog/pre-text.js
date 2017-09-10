@@ -3,19 +3,20 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
 import PreBase from './pre-base';
-import styles from './pre-coding-styles';
+import styles from './pre-text-styles';
 
-function _PreCoding({
-  classes, title, author, date, content
+function _PreText({
+  classes, path, title, author, date, html
 }) {
   const newContent = (
     <div>
-      <div dangerouslySetInnerHTML={{ __html: content }} />
+      <div dangerouslySetInnerHTML={{ __html: html }} />
       <span>Read More>></span>
     </div>
   );
   return (
     <PreBase
+      path={path}
       title={title}
       author={author}
       date={date}
@@ -25,11 +26,12 @@ function _PreCoding({
   );
 }
 
-_PreCoding.propsType = {
+_PreText.propsType = {
+  path: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   author: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
-  content: PropTypes.string.isRequired,
+  html: PropTypes.string.isRequired,
 };
 
-export const PreCoding = withStyles(styles)(_PreCoding);
+export const PreText = withStyles(styles)(_PreText);

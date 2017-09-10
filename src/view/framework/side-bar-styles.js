@@ -24,13 +24,14 @@ export default {
 
   linkButton: {
     width: '100%',
-    paddingLeft: '3rem',
-    paddingRight: '3rem',
+    padding: '0',
   },
 
   linkLink: {
     display: 'flex',
     flexDirection: 'row',
+    width: '100%',
+    padding: '12px 3rem',
     alignItems: 'center',
     color: C.COLOR_TEXT_1,
     fontSize: C.FONT_SIZE_1_5,

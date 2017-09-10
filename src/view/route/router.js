@@ -16,6 +16,7 @@ class _Router extends Component {
   }
 
   onPopState() {
+    console.log(location.pathname);
     this.props.changeRoute(location.pathname);
   }
 

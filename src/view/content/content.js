@@ -8,7 +8,7 @@ function _Content({
   classes, data,
 }) {
   return (
-    <div className={classes.wrap}>
+    <article className={classes.wrap}>
       <h1 className={classes.title}>
         {data.title}
       </h1>
@@ -21,7 +21,7 @@ function _Content({
         </span>
       </div>
       <div dangerouslySetInnerHTML={{ __html: data.html }} />
-    </div>
+    </article>
   );
 }
 

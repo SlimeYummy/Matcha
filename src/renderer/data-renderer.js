@@ -1,10 +1,11 @@
 import path from 'path';
 import yaml from 'js-yaml';
-import * as C from '../config';
-import { readFile } from './file';
+
+import * as file from './file';
 
 export default class DataRenderer {
-  constructor(rendererMap) {
+  constructor(rootPath, rendererMap) {
+    this._rootPath = path.posix.normalize(`${rootPath}/`);
     this._rendererMap = new Map();
     for (const type in rendererMap) {
       this._rendererMap.set(type, rendererMap[type]);
@@ -12,9 +13,9 @@ export default class DataRenderer {
   }
 
   async render(normPath) {
-    const realPath = `${C.DATA_PATH}${normPath}`;
+    const realPath = file.clearSlash(`${this._rootPath}/${normPath}`);
 
-    const yamlFile = await readFile(`${realPath}/meta.yml`, 'utf8');
+    const yamlFile = await file.readFile(`${realPath}/meta.yml`, 'utf8');
     const yamlObj = yaml.safeLoad(yamlFile);
 
     const subRenderer = this._rendererMap.get(yamlObj.type);
@@ -22,7 +23,12 @@ export default class DataRenderer {
       throw new Error(`Unknown type ${yamlObj.type} - ${urlPath}`);
     }
 
-    const data = await subRenderer.render(yamlObj, realPath);
+    const pathInfo = {
+      rootPath: this._rootPath,
+      normPath,
+      realPath,
+    };
+    const data = await subRenderer.render(yamlObj, pathInfo);
     data.path = normPath;
     return data;
   }

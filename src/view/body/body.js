@@ -9,10 +9,9 @@ import Catalog from '../catalog';
 import Content from '../content';
 
 class _Body extends Component {
-  componentDidMount() {
-    const { route, data } = this.props;
-    if (route.path !== data.data.path) {
-      this.props.fetchData(`/data${path}`);
+  componentWillReceiveProps(nextProps) {
+    if (this.props.route.path !== nextProps.route.path) {
+      this.props.fetchData(`/data${nextProps.route.path}`);
     }
   }
 

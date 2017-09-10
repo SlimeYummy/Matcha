@@ -49,7 +49,7 @@ function IconList({
   classes
 }) {
   return (
-    <div className={classes.iconList}>
+    <nav className={classes.iconList}>
       <a href="https://github.com/nanunoo">
         <IconButton className={classes.iconButton}>
           <IconGithub className={classes.iconIcon} />
@@ -63,7 +63,7 @@ function IconList({
       <IconButton className={classes.iconButton}>
         <IconEmail className={classes.iconIcon} />
       </IconButton>
-    </div>
+    </nav>
   );
 }
 

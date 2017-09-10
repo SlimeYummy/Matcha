@@ -25,7 +25,7 @@ export default class CacheManager {
     if (legalSet.has(realPath)) {
       return true;
     }
-    const stats = await file.stat(realPath);
+    const stats = await file.statFile(realPath);
     if (!stats.isDirectory()) {
       throw new Error(`Invaild path - ${rawPath}`);
     }

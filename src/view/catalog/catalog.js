@@ -3,41 +3,43 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
 import styles from './catalog-styles';
-import { PreCoding } from './pre-coding';
-import { PrePainting } from './pre-painting';
+import { PreText } from './pre-text';
+import { PreImage } from './pre-image';
 
 function renderItems(itemArray) {
   return itemArray.map((item) => {
     if (item.html) {
       return (
-        <PreCoding
+        <PreText
           key={item.title}
           title={item.title}
           author={item.author}
           date={item.date}
-          content={item.html}
+          path={item.path}
+          html={item.html}
         />
       );
 
     } else if (preview.image) {
       return (
-        <PrePainting
+        <PreImage
           key={item.title}
           title={item.title}
           author={item.author}
           date={item.date}
+          path={item.path}
           image={item.image}
         />
       );
 
     } else {
       return (
-        <PreCoding
+        <PreText
           key={item.title}
           title={item.title}
           author={item.author}
           date={item.date}
-          content="......"
+          html="......"
         />
       );
     }

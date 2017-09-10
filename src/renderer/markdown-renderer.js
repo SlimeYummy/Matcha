@@ -9,9 +9,9 @@ export default class MarkdownRenderer {
     });
   }
 
-  async render(yamlObj, path) {
+  async render(yamlObj, { realPath }) {
     const contentFile = yamlObj.content || 'content.md';
-    const mdText = await readFile(`${path}/${contentFile}`, 'utf8');
+    const mdText = await readFile(`${realPath}/${contentFile}`, 'utf8');
     const htmlText = this._markdown.render(mdText);
     return {
       type: yamlObj.type,

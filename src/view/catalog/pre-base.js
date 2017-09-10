@@ -3,6 +3,7 @@ import { withStyles } from 'material-ui/styles';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
+import { Link } from '../route';
 import styles from './pre-base-styles';
 
 class PreBase extends Component {
@@ -37,28 +38,30 @@ class PreBase extends Component {
   }
 
   render() {
-    const { title, author, date, content } = this.props;
+    const { title, path, author, date, content, classes } = this.props;
     return (
       <article
-        className={this._mergeStyles('wrap')}
+        className={classes.wrap}
         elevation={this.state.isHover ? 6 : 2}
         onMouseEnter={this.onEnter}
         onMouseLeave={this.onLeave}
       >
-        <div className={this._mergeStyles('meta')}>
-          <div className={this._mergeStyles('title')}>{title}</div>
-          <span className={this._mergeStyles('author')}>
-            <span className={this._mergeStyles('sign')} />
-            {author}
-          </span>
-          <span className={this._mergeStyles('date')}>
-            <span className={this._mergeStyles('sign')} />
-            {date}
-          </span>
-        </div>
-        <div className={this._mergeStyles('content')}>
-          {content}
-        </div>
+        <Link className={classes.wrapLink} to={path}>
+          <div className={classes.meta}>
+            <div className={classes.title}>{title}</div>
+            <span className={classes.author}>
+              <span className={classes.sign} />
+              {author}
+            </span>
+            <span className={classes.date}>
+              <span className={classes.sign} />
+              {date}
+            </span>
+          </div>
+          <div className={this._mergeStyles('content')}>
+            {content}
+          </div>
+        </Link>
       </article>
     );
   }
@@ -66,6 +69,7 @@ class PreBase extends Component {
 
 PreBase.propTypes = {
   extraClasses: PropTypes.object,
+  path: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   author: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,

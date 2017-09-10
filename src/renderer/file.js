@@ -1,4 +1,5 @@
 import fs from 'fs';
+import glob from 'glob';
 
 export function readFile(path, encoding) {
   return new Promise((resolve, reject) => {
@@ -24,7 +25,7 @@ export function writeFile(path, data) {
   });
 }
 
-export function stat(path) {
+export function statFile(path) {
   return new Promise((resolve, reject) => {
     fs.stat(path, (err, stats) => {
       if (err) {
@@ -36,9 +37,9 @@ export function stat(path) {
   });
 }
 
-export function readdir(path) {
+export function globFile(pattern, options = {}) {
   return new Promise((resolve, reject) => {
-    fs.readdir(path, (err, nameArray) => {
+    glob(pattern, options, (err, nameArray) => {
       if (err) {
         return reject(err);
       } else {
@@ -46,4 +47,9 @@ export function readdir(path) {
       }
     });
   });
+}
+
+const SLASH_REGEXP = /(?:\/|\\)+/g;
+export function clearSlash(path) {
+  return path.replace(SLASH_REGEXP, '/');
 }

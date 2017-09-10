@@ -3,30 +3,32 @@ import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 
 import PreBase from './pre-base';
-import styles from './pre-painting-styles';
+import styles from './pre-image-styles';
 
-function _PrePainting({
-  classes, title, author, date, url
+function _PreImage({
+  classes, path, title, author, date, image
 }) {
   const content = (
-    <img className={classes.img} src={url} />
+    <img className={classes.img} src={image} />
   );
   return (
     <PreBase
+      path={path}
       title={title}
       author={author}
       date={date}
-      content={content}
+      content={image}
       extraClasses={classes}
     />
   );
 }
 
-_PrePainting.propsType = {
+_PreImage.propsType = {
+  path: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   author: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
-  url: PropTypes.string.isRequired,
+  image: PropTypes.string.isRequired,
 };
 
-export const PrePainting = withStyles(styles)(_PrePainting);
+export const PreImage = withStyles(styles)(_PreImage);

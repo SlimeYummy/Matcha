@@ -4,7 +4,7 @@ import {
   FETCH_DATA_FAILURE,
 } from '../event';
 
-function fetchDataRequest() {
+function fetchDataRequest(path) {
   return {
     type: FETCH_DATA_REQUEST,
   }

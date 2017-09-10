@@ -5,14 +5,11 @@ export default {
     width: '100%',
     color: C.COLOR_TEXT_1,
     marginBottom: `${3 * C.LINE_HEIGHT}rem`,
+  },
 
-    '&:hover': {
-      cursor: 'pointer',
-    },
-
-    '&:active': {
-      cursor: 'pointer',
-    },
+  wrapLink: {
+    display: 'block',
+    width: '100%',
   },
 
   meta: {
@@ -66,7 +63,7 @@ export default {
   },
 
   '@media (min-width: 1099.5px)': {
-    wrap: {
+    wrapLink: {
       display: 'flex',
       flexDirection: 'row',
     },
