@@ -1,7 +1,7 @@
 import markdownIt from 'markdown-it';
 import { readFile } from './file';
 
-export default class MdRenderer {
+export default class MarkdownRenderer {
   constructor() {
     this._markdown = markdownIt({
       html: true,
@@ -20,5 +20,9 @@ export default class MdRenderer {
       date: yamlObj.date,
       html: htmlText
     };
+  }
+
+  _removeHeader() {
+
   }
 }

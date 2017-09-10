@@ -3,3 +3,4 @@ dev/
 prod/
 repository/
 cache/
+package-lock.json

@@ -3,8 +3,8 @@ import * as C from '../../styles-const';
 export default {
   wrap: {
     display: 'flex',
-    flexDriection: 'row',
-    marginTop: '70px',
+    flexDirection: 'row',
+    marginTop: 'calc(50px + 3vh + 3vw)',
     marginBottom: '200px',
     background: C.COLOR_BK_2,
   },

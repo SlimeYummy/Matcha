@@ -4,7 +4,7 @@ export default {
   wrap: {
     width: '100%',
     color: C.COLOR_TEXT_1,
-    marginBottom: C.LINE_HEIGHT_2,
+    marginBottom: `${3 * C.LINE_HEIGHT}rem`,
 
     '&:hover': {
       cursor: 'pointer',

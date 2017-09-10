@@ -6,8 +6,8 @@ import styles from './catalog-styles';
 import { PreCoding } from './pre-coding';
 import { PrePainting } from './pre-painting';
 
-function renderItems(items) {
-  return items.map((item) => {
+function renderItems(itemArray) {
+  return itemArray.map((item) => {
     if (item.html) {
       return (
         <PreCoding
@@ -49,7 +49,7 @@ function _Catalog({
 }) {
   return (
     <nav className={classes.wrap}>
-      {renderItems(data.items)}
+      {renderItems(data.itemArray)}
     </nav>
   );
 }

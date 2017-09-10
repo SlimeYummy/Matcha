@@ -1,14 +1,16 @@
 import fs from 'fs';
 import markdownIt from 'markdown-it';
+import moment from 'moment';
 import path from 'path';
 import yaml from 'js-yaml';
 import * as C from '../config';
-import { readFile, readdir } from './file';
+import { readFile, stat, readdir } from './file';
 
 export default class CatalogRenderer {
   constructor() {
     this._markdown = markdownIt({
       html: true,
+      breaks: true,
     });
   }
 
@@ -17,10 +19,10 @@ export default class CatalogRenderer {
     const previewArray = await Promise.all(
       includeArray.map((fileName) => this._preview(fileName))
     );
-    const items = previewArray.filter((preview) => !!preview);
+    const itemArray = this._processItemArray(previewArray);
     return {
       type: 'catalog',
-      items: items,
+      itemArray: itemArray,
     }
   }
 
@@ -41,28 +43,46 @@ export default class CatalogRenderer {
       const yamlFile = await readFile(fileName, 'utf-8');
       const yamlObj = yaml.safeLoad(yamlFile);
 
-      if (yamlObj.previewText) {
-        return {
-          title: yamlObj.title,
-          author: yamlObj.author,
-          date: yamlObj.date,
-          html: this._markdown.render(yamlObj.previewText),
-        };
-
-      } else if (yamlObj.previewImage) {
-        return {
-          title: yamlObj.title,
-          author: yamlObj.author,
-          date: yamlObj.date,
-          image: yamlObj.image,
-        };
-
+      if (yamlObj.preMarkdown) {
+        return this._preMarkdown(yamlObj);
+      } else if (yamlObj.preImage) {
+        return this._preImage(yamlObj);
       } else {
         return null;
       }
 
     } catch (err) {
-      return null;
+      console.log(err);
     }
+  }
+
+  _preMarkdown(yamlObj) {
+    const preMarkdown = yamlObj.preMarkdown.replace(/\n/g, '\n\n');
+    return {
+      title: yamlObj.title,
+      author: yamlObj.author,
+      date: yamlObj.date,
+      html: this._markdown.render(preMarkdown),
+    };
+  }
+
+  _preImage(yamlObj) {
+    return {
+      title: yamlObj.title,
+      author: yamlObj.author,
+      date: yamlObj.date,
+      image: yamlObj.image,
+    };
+  }
+
+  _processItemArray(previewArray) {
+    const itemArray = previewArray
+      .filter((item) => !!item)
+      .sort((itemA, itemB) => itemB.date - itemA.date)
+      .map((item) => ({
+        ...item,
+        date: moment(item.date).format('YY-MM-DD'),
+      }));
+    return itemArray;
   }
 };
