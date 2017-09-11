@@ -1,6 +1,4 @@
-import { blue, red } from 'material-ui/colors';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
-import createPalette from 'material-ui/styles/palette';
 import React, { Component } from 'react';
 import { render } from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
@@ -31,13 +29,7 @@ window.onload = () => {
     }
   };
 
-  const theme = createMuiTheme({
-    palette: createPalette({
-      primary: blue,
-      accent: red,
-      type: 'light',
-    }),
-  });
+  const theme = createMuiTheme({});
 
   const store = newStore(window.__INITIAL_STATE__);
 

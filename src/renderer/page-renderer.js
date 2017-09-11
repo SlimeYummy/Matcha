@@ -1,9 +1,7 @@
 import { create } from 'jss';
 import preset from 'jss-preset-default';
-import { blue, red } from 'material-ui/colors';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
 import createGenerateClassName from 'material-ui/styles/createGenerateClassName';
-import createPalette from 'material-ui/styles/palette';
 import { renderToString } from 'react-dom/server';
 import React from 'react';
 import { JssProvider, SheetsRegistry } from 'react-jss';
@@ -21,13 +19,7 @@ export default class PageRenderer {
     store.dispatch(changeRoute(normPath));
     await store.dispatch(fetchData(`/data${normPath}`));
 
-    const theme = createMuiTheme({
-      palette: createPalette({
-        primary: blue,
-        accent: red,
-        type: 'light',
-      }),
-    });
+    const theme = createMuiTheme({});
 
     const sheetsRegistry = new SheetsRegistry();
     const jss = create(preset());

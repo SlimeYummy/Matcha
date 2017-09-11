@@ -84,7 +84,7 @@ export default class CatalogRenderer {
       .sort((itemA, itemB) => itemB.date - itemA.date)
       .map((item) => ({
         ...item,
-        date: moment(item.date).format('YY-MM-DD'),
+        date: moment(item.date).format('YYYY-MM-DD'),
       }));
     return itemArray;
   }
