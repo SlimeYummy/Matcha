@@ -14,13 +14,15 @@ function _Content({
       </h1>
       <div className={classes.meta}>
         <span className={classes.author}>
+          <span className={classes.sign} />
           {data.author}
         </span>
         <span className={classes.date}>
+          <span className={classes.sign} />
           {data.date}
         </span>
       </div>
-      <div dangerouslySetInnerHTML={{ __html: data.html }} />
+      <div className={classes.content} dangerouslySetInnerHTML={{ __html: data.html }} />
     </article>
   );
 }

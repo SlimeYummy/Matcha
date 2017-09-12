@@ -13,6 +13,9 @@ class _Body extends Component {
     if (this.props.route.path !== nextProps.route.path) {
       this.props.fetchData(`/data${nextProps.route.path}`);
     }
+    if (this.props.data.data.path !== nextProps.data.data.path) {
+      window.scrollTo(0, 0);
+    }
   }
 
   render() {
