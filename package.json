@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "webpack && node ./dev/server.js",
-    "build": "webpack",
-    "deploy": "npm install && webpack --env.prod"
+    "release": "webpack --env.prod"
   },
   "repository": {
     "type": "git",

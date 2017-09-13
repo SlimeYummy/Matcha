@@ -1,6 +1,6 @@
 import fetch, { Headers, Request, Response } from 'node-fetch';
 import path from 'path';
-import { LOCAL_HOST } from '../config';
+import { HOST } from '../config';
 
 function localUrl(url) {
   if (url.startsWith('//')) {
@@ -12,7 +12,7 @@ function localUrl(url) {
   }
 
   const normPath = path.posix.normalize(`/${url}`);
-  return `http://${LOCAL_HOST}${normPath}`;
+  return `http://${HOST}${normPath}`;
 }
 
 global.fetch = (url, options) => {

@@ -11,7 +11,7 @@ import { pageRenderer, dataRenderer } from './renderer';
 const server = express();
 
 // app resource
-server.use('/', express.static('./dev'));
+server.use('/', express.static(C.WEB_PATH));
 // user resource
 server.use('/', express.static(C.DATA_PATH));
 
@@ -36,6 +36,6 @@ server.get('/*', async (req, res) => {
   }
 });
 
-server.listen(3000, () => {
-  console.log('Matcha is running at http://localhost:3000.');
+server.listen(C.PORT, () => {
+  console.log(`Matcha is running at http://${C.HOST}.`);
 });
