@@ -1,4 +1,5 @@
 import markdownIt from 'markdown-it';
+import katex from 'markdown-it-katex';
 import moment from 'moment';
 
 import * as file from './file';
@@ -68,6 +69,7 @@ export default class MarkdownRenderer {
       html: true,
       langPrefix: 'lang-',
     });
+    this._markdown.use(katex);
   }
 
   async render(yamlObj, { realPath }) {
