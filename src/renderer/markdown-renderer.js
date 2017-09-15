@@ -65,7 +65,8 @@ function statusTransfrom(status, line) {
 }
 
 export default class MarkdownRenderer {
-  constructor() {
+  constructor(debug) {
+    this._debug = debug;
     this._markdown = markdownIt({
       html: true,
       langPrefix: 'lang-',

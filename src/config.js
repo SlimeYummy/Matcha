@@ -1,5 +1,6 @@
 import process from 'process';
 
+export const DEBUG = !!process.env.DEBUG || true;
 export const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 export const HOST = `localhost:${PORT}`;
 export const WEB_PATH = process.env.WEB_PATH || './dev';

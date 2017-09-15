@@ -7,7 +7,8 @@ import * as C from '../config';
 import * as file from './file';
 
 export default class CatalogRenderer {
-  constructor() {
+  constructor(debug) {
+    this._debug = debug;
     this._markdown = markdownIt({
       html: true,
       breaks: true,
@@ -15,6 +16,12 @@ export default class CatalogRenderer {
   }
 
   async render(catalogMeta, pathInfo) {
+    if (!this._debug && catalogMeta.debug) {
+      return {
+        type: 'catalog',
+        itemArray: [],
+      }
+    }
     const dirArray = await this._scanInclude(catalogMeta.include, pathInfo);
     const jsonArray = await Promise.all(
       dirArray.map((dirName) => this._makePreview(pathInfo.rootPath, dirName))
@@ -43,6 +50,10 @@ export default class CatalogRenderer {
     try {
       const yamlFile = await file.readFile(`${rootPath}/${dirName}/meta.yml`, 'utf-8');
       const yamlObj = yaml.safeLoad(yamlFile);
+
+      if (!this._debug && yamlObj.debug) {
+        return null;
+      }
 
       if (yamlObj.preMarkdown) {
         return this._previewMarkdown(yamlObj, dirName);

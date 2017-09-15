@@ -10,9 +10,9 @@ export const pageRenderer = new CacheManager(
 );
 
 export const dataRenderer = new CacheManager(
-  new DataRender(C.DATA_PATH, {
-    'catalog': new CatalogRenderer(),
-    'content-markdown': new MarkdownRenderer(),
+  new DataRender(C.DATA_PATH, C.DEBUG, {
+    'catalog': new CatalogRenderer(C.DEBUG),
+    'content-markdown': new MarkdownRenderer(C.DEBUG),
   }),
 );
 

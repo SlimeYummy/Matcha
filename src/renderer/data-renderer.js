@@ -4,8 +4,9 @@ import yaml from 'js-yaml';
 import * as file from './file';
 
 export default class DataRenderer {
-  constructor(rootPath, rendererMap) {
+  constructor(rootPath, debug, rendererMap) {
     this._rootPath = path.posix.normalize(`${rootPath}/`);
+    this._debug = debug;
     this._rendererMap = new Map();
     for (const type in rendererMap) {
       this._rendererMap.set(type, rendererMap[type]);
@@ -17,6 +18,10 @@ export default class DataRenderer {
 
     const yamlFile = await file.readFile(`${realPath}/meta.yml`, 'utf8');
     const yamlObj = yaml.safeLoad(yamlFile);
+
+    if (!this._debug && yamlObj.debug) {
+      return {};
+    }
 
     const subRenderer = this._rendererMap.get(yamlObj.type);
     if (!subRenderer) {
