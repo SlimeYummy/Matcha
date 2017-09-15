@@ -1,3 +1,4 @@
+import highlight from 'highlight.js';
 import markdownIt from 'markdown-it';
 import katex from 'markdown-it-katex';
 import moment from 'moment';
@@ -68,6 +69,7 @@ export default class MarkdownRenderer {
     this._markdown = markdownIt({
       html: true,
       langPrefix: 'lang-',
+      highlight: this._highlight,
     });
     this._markdown.use(katex);
   }
@@ -84,5 +86,16 @@ export default class MarkdownRenderer {
       date: moment(yamlObj.date).format('YYYY-MM-DD'),
       html: htmlText
     };
+  }
+
+  _highlight(text, lang) {
+    if (lang && highlight.getLanguage(lang)) {
+      try {
+        return highlight.highlight(lang, text).value;
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    return ''; // use external default escaping
   }
 }

@@ -46,7 +46,8 @@ export default class PageRenderer {
 <meta name="renderer" content="webkit">
 <meta name="force-rendering" content="webkit">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css" integrity="sha384-B41nY7vEWuDrE9Mr+J2nBL0Liu+nl/rBXTdpQal730oTHdlrlXHzYMOhDU60cwde" crossorigin="anonymous">
+<link rel="stylesheet" href="/public/katex/katex.min.css">
+<link rel="stylesheet" href="/public/highlight.css">
 <title>FenQi.IO 分歧点</title>
 </head>
 <body>
